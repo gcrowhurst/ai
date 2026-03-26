@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
 const STORAGE_KEY = "biz-board-v2";
+const FEEDBACK_KEY = "session-feedback-v1";
 
 function storageGet() {
   try {
@@ -16,6 +17,31 @@ function storageSet(data) {
 function storageClear() {
   localStorage.removeItem(STORAGE_KEY);
 }
+
+function feedbackGet() {
+  try {
+    const raw = localStorage.getItem(FEEDBACK_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function feedbackAdd(entry) {
+  const all = feedbackGet();
+  all.push(entry);
+  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(all));
+}
+
+function feedbackClear() {
+  localStorage.removeItem(FEEDBACK_KEY);
+}
+
+const FEEDBACK_FACES = [
+  { emoji: "\u{1F620}", label: "Not useful", value: 1 },
+  { emoji: "\u{1F615}", label: "Meh", value: 2 },
+  { emoji: "\u{1F642}", label: "Good", value: 3 },
+  { emoji: "\u{1F60A}", label: "Great", value: 4 },
+  { emoji: "\u{1F929}", label: "Amazing!", value: 5 },
+];
 
 const RESOURCE_TYPES = [
   { id: "interactive", label: "Interactive / Digital", icon: "\u{1F4BB}", desc: "Drag-and-drop, clickable, auto-marked online activity" },
@@ -246,6 +272,12 @@ function App() {
   const [showPrint, setShowPrint] = useState(false);
   const [printContent, setPrintContent] = useState("");
 
+  // Feedback
+  const [feedbackData, setFeedbackData] = useState([]);
+  const [myFeedback, setMyFeedback] = useState(null);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const feedbackPollRef = useRef(null);
+
   // Storage
   const loadBoard = () => { setBoardData(storageGet()); };
   const saveBoard = (d) => { storageSet(d); setBoardData(d); };
@@ -269,6 +301,31 @@ function App() {
   };
 
   const resetBoard = () => { storageClear(); setBoardData({}); setMyClaimedId(null); setMySubmitted(false); };
+
+  // Feedback helpers
+  const loadFeedback = () => { setFeedbackData(feedbackGet()); };
+
+  const submitFeedback = (value) => {
+    if (feedbackSubmitted) return;
+    const face = FEEDBACK_FACES.find(f => f.value === value);
+    feedbackAdd({ name: userName, value, label: face?.label, time: Date.now() });
+    setMyFeedback(value);
+    setFeedbackSubmitted(true);
+    loadFeedback();
+  };
+
+  const resetFeedback = () => { feedbackClear(); setFeedbackData([]); setMyFeedback(null); setFeedbackSubmitted(false); };
+
+  useEffect(() => {
+    if (view === "feedback") {
+      loadFeedback();
+      // Check if this user already submitted
+      const existing = feedbackGet().find(f => f.name === userName);
+      if (existing) { setMyFeedback(existing.value); setFeedbackSubmitted(true); }
+      feedbackPollRef.current = setInterval(loadFeedback, 3000);
+      return () => clearInterval(feedbackPollRef.current);
+    }
+  }, [view]);
 
   useEffect(() => {
     if (view === "icebreaker") { loadBoard(); pollRef.current = setInterval(loadBoard, 3000); return () => clearInterval(pollRef.current); }
@@ -416,6 +473,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
               <p style={{ color: "#6b7f92", margin: 0 }}>Welcome, <strong style={{ color: "#dde4ed" }}>{userName}</strong>!</p>
               <button style={{ ...S.btn, ...S.btnP }} onClick={() => setView("icebreaker")}>{"\u{1F3B2}"} Start Icebreaker</button>
               <button style={{ ...S.btn, ...S.btnG }} onClick={() => setView("workshop")}>{"\u{1F6E0}\uFE0F"} Jump to Workshop</button>
+              <button style={{ ...S.btn, ...S.btnG }} onClick={() => setView("feedback")}>{"\u{1F4AC}"} Session Feedback</button>
               <label style={S.tog}>
                 <input type="checkbox" checked={facilitatorMode} onChange={e => setFacilitatorMode(e.target.checked)} />
                 <span style={{ fontSize: 13, color: "#556" }}>I&apos;m the facilitator</span>
@@ -708,7 +766,117 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                 </div>
               ))}
             </div>
+            <div style={{ textAlign: "center", marginTop: 16 }}>
+              <button style={{ ...S.btn, ...S.btnP }} onClick={() => setView("feedback")}>
+                {"\u{1F4AC}"} Give Session Feedback
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== FEEDBACK =====
+  if (view === "feedback") {
+    const avgScore = feedbackData.length > 0
+      ? (feedbackData.reduce((s, f) => s + f.value, 0) / feedbackData.length).toFixed(1)
+      : null;
+
+    const countByValue = FEEDBACK_FACES.map(f => ({
+      ...f,
+      count: feedbackData.filter(d => d.value === f.value).length,
+    }));
+
+    const maxCount = Math.max(...countByValue.map(c => c.count), 1);
+
+    return (
+      <div style={S.page}>
+        <div style={S.bar}>
+          <button style={S.back} onClick={() => setView("workshop")}>&larr; Back</button>
+          <span style={S.barTitle}>{"\u{1F4AC}"} Session Feedback</span>
+          <span style={S.barBadge}>{feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}</span>
+        </div>
+
+        <div style={S.feedbackWrap}>
+          {/* Submit feedback */}
+          {!feedbackSubmitted ? (
+            <div style={S.feedbackCard}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 4px", textAlign: "center" }}>How was this session for you?</h2>
+              <p style={{ fontSize: 13, color: "#5e7080", margin: "0 0 20px", textAlign: "center" }}>Tap a face to share your honest feedback.</p>
+              <div style={S.faceRow}>
+                {FEEDBACK_FACES.map(f => (
+                  <div key={f.value} onClick={() => submitFeedback(f.value)} style={S.faceBtn}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.2)"; e.currentTarget.style.background = "rgba(99,179,237,0.1)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}>
+                    <span style={{ fontSize: 40 }}>{f.emoji}</span>
+                    <span style={{ fontSize: 11, color: "#7a8ea0", marginTop: 4 }}>{f.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div style={S.feedbackCard}>
+              <div style={{ textAlign: "center" }}>
+                <span style={{ fontSize: 48 }}>{FEEDBACK_FACES.find(f => f.value === myFeedback)?.emoji}</span>
+                <h2 style={{ fontSize: 18, fontWeight: 700, margin: "8px 0 4px" }}>Thanks, {userName}!</h2>
+                <p style={{ fontSize: 13, color: "#5e7080", margin: 0 }}>Your feedback has been recorded.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Live results (always visible, updates via polling) */}
+          {feedbackData.length > 0 && (
+            <div style={S.feedbackResults}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 14px" }}>
+                {"\u{1F4CA}"} Live Results
+                <span style={{ fontSize: 12, fontWeight: 400, color: "#5e7080", marginLeft: 8 }}>
+                  {feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}{avgScore && <> &bull; avg: {avgScore}/5</>}
+                </span>
+              </h3>
+
+              {/* Horizontal bar chart */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {countByValue.map(f => (
+                  <div key={f.value} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 22, width: 32, textAlign: "center" }}>{f.emoji}</span>
+                    <div style={{ flex: 1, height: 26, background: "rgba(255,255,255,0.03)", borderRadius: 6, overflow: "hidden", position: "relative" }}>
+                      <div style={{
+                        height: "100%",
+                        width: `${(f.count / maxCount) * 100}%`,
+                        background: f.count > 0 ? "linear-gradient(90deg, #2563eb, #38bdf8)" : "transparent",
+                        borderRadius: 6,
+                        transition: "width 0.4s ease",
+                        minWidth: f.count > 0 ? 24 : 0,
+                      }} />
+                      {f.count > 0 && (
+                        <span style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", fontSize: 12, fontWeight: 700, color: "#fff" }}>{f.count}</span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 11, color: "#5e7080", width: 55, textAlign: "right" }}>{f.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Individual responses (facilitator view) */}
+              {facilitatorMode && (
+                <div style={{ marginTop: 18 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ ...S.facPill, background: "rgba(200,80,120,0.1)" }}>FACILITATOR VIEW</span>
+                    <button style={S.facReset} onClick={resetFeedback}>Reset Feedback</button>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {feedbackData.map((f, i) => (
+                      <div key={i} style={S.fbChip}>
+                        <span style={{ fontSize: 16 }}>{FEEDBACK_FACES.find(fc => fc.value === f.value)?.emoji}</span>
+                        <span style={{ fontSize: 11, color: "#a0b4c4" }}>{f.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -905,6 +1073,31 @@ const S = {
   },
   ethGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 },
   ethCard: { background: "rgba(0,0,0,0.1)", borderRadius: 8, padding: "11px" },
+
+  // Feedback
+  feedbackWrap: { padding: "24px 16px 60px", maxWidth: 540, margin: "0 auto" },
+  feedbackCard: {
+    background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: 14, padding: "28px 22px", marginBottom: 18,
+  },
+  faceRow: {
+    display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap",
+  },
+  faceBtn: {
+    display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+    padding: "12px 14px", borderRadius: 12, cursor: "pointer",
+    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+    transition: "all 0.15s", minWidth: 70,
+  },
+  feedbackResults: {
+    background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)",
+    borderRadius: 12, padding: "18px 20px",
+  },
+  fbChip: {
+    display: "flex", alignItems: "center", gap: 6,
+    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: 20, padding: "4px 10px",
+  },
 };
 
 export default App;
