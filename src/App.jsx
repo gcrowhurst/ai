@@ -1,47 +1,49 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dices, Wrench, MessageSquare, Scale, Printer, Clipboard, Copy, Check, CheckCircle2,
   AlertTriangle, Flag, Lightbulb, BarChart2, Link, RefreshCw, Zap,
-  ChevronUp, ChevronDown, ChevronLeft,
+  ChevronUp, ChevronDown, ChevronLeft, QrCode, X,
   MousePointerClick, FileText, Globe, LayoutDashboard, FlaskConical, Video,
   Eye, Lock, Target, ClipboardCheck, ClipboardList,
-  Info, HelpCircle, BookOpen, Layers, User,
+  Info, HelpCircle, BookOpen, Layers, User, Pencil, Clock,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 
 const STORAGE_KEY = "biz-board-v2";
 const FEEDBACK_KEY = "session-feedback-v1";
 
-function storageGet() {
+// ======== API + localStorage hybrid storage ========
+// Writes go to BOTH the API (cross-device) and localStorage (fallback).
+// Reads try the API first; if it fails, fall back to localStorage.
+
+async function apiFetch(path) {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+    const r = await fetch(path);
+    if (!r.ok) throw new Error();
+    return await r.json();
+  } catch { return null; }
 }
 
-function storageSet(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function storageClear() {
-  localStorage.removeItem(STORAGE_KEY);
-}
-
-function feedbackGet() {
+async function apiPost(path, data) {
   try {
-    const raw = localStorage.getItem(FEEDBACK_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+    const r = await fetch(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!r.ok) throw new Error();
+    return await r.json();
+  } catch { return null; }
 }
 
-function feedbackAdd(entry) {
-  const all = feedbackGet();
-  all.push(entry);
-  localStorage.setItem(FEEDBACK_KEY, JSON.stringify(all));
+async function apiDelete(path) {
+  try { await fetch(path, { method: "DELETE" }); } catch { /* noop */ }
 }
 
-function feedbackClear() {
-  localStorage.removeItem(FEEDBACK_KEY);
+function localGet(key, fallback) {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
 }
+function localSet(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
 const FEEDBACK_FACES = [
   { emoji: "\u{1F620}", label: "Not useful", value: 1 },
@@ -51,14 +53,8 @@ const FEEDBACK_FACES = [
   { emoji: "\u{1F929}", label: "Amazing!", value: 5 },
 ];
 
-const RESOURCE_TYPES = [
-  { id: "interactive", label: "Interactive / Digital", Icon: MousePointerClick, desc: "Drag-and-drop, clickable, auto-marked online activity" },
-  { id: "paper", label: "Paper-Based", Icon: FileText, desc: "Printable worksheet, exam paper, or booklet" },
-  { id: "website", label: "Website / Web App", Icon: Globe, desc: "A single self-contained HTML file I can upload to SharePoint or share directly" },
-  { id: "presentation", label: "Presentation / Slides", Icon: LayoutDashboard, desc: "PowerPoint / Google Slides with embedded tasks" },
-  { id: "practical", label: "Practical / Hands-On", Icon: FlaskConical, desc: "Observation checklist, lab task, or physical activity" },
-  { id: "video", label: "Video-Based", Icon: Video, desc: "Video scenario with questions or a student-produced video task" },
-];
+// Resource type locked to "website" — the workshop output is always a self-contained HTML file.
+const RESOURCE_TYPE_WEBSITE = { id: "website", label: "Website / Web App", Icon: Globe, desc: "A single self-contained HTML file you can upload to SharePoint or share directly" };
 
 const BUSINESS_QUESTIONS = [
   { id: "product", label: "The Product", question: "What does this business sell?", hint: "Be creative \u2014 products, services, experiences. The weirder the better.", placeholder: "e.g. Edible furniture for pets, time-travel insurance...", emoji: "\u{1F6CD}\uFE0F" },
@@ -92,8 +88,7 @@ function formatOutcomes(raw) {
 }
 
 function resourceDesc(type) {
-  const r = RESOURCE_TYPES.find(t => t.id === type);
-  return r ? r.label : "a resource";
+  return RESOURCE_TYPE_WEBSITE.label;
 }
 
 function resourceFormatInstructions(type) {
@@ -260,6 +255,7 @@ function App() {
   const [userName, setUserName] = useState("");
   const [nameSet, setNameSet] = useState(false);
   const [facilitatorMode, setFacilitatorMode] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   // Icebreaker
   const [boardData, setBoardData] = useState({});
@@ -272,7 +268,7 @@ function App() {
   // Workshop
   const [copiedIdx, setCopiedIdx] = useState(null);
   const [lessonInfo, setLessonInfo] = useState({
-    title: "", outcomes: "", methods: "", frustrations: "", resourceType: "",
+    title: "", outcomes: "", methods: "", frustrations: "", resourceType: "website",
   });
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [activeTemplate, setActiveTemplate] = useState(null);
@@ -286,9 +282,29 @@ function App() {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const feedbackPollRef = useRef(null);
 
-  // Storage
-  const loadBoard = () => { setBoardData(storageGet()); };
-  const saveBoard = (d) => { storageSet(d); setBoardData(d); };
+  // ---- Board storage (API + localStorage) ----
+  const loadBoard = useCallback(async () => {
+    const remote = await apiFetch("/api/board");
+    if (remote && Object.keys(remote).length > 0) {
+      // Merge: remote wins for each key with newer timestamp
+      const local = localGet(STORAGE_KEY, {});
+      const merged = { ...local, ...remote };
+      for (const [k, v] of Object.entries(local)) {
+        if (!merged[k] || (v.time && v.time > (merged[k].time || 0))) merged[k] = v;
+      }
+      localSet(STORAGE_KEY, merged);
+      setBoardData(merged);
+    } else {
+      setBoardData(localGet(STORAGE_KEY, {}));
+    }
+  }, []);
+
+  const saveBoard = async (d) => {
+    localSet(STORAGE_KEY, d);
+    setBoardData(d);
+    const merged = await apiPost("/api/board", d);
+    if (merged) { localSet(STORAGE_KEY, merged); setBoardData(merged); }
+  };
 
   const claimQuestion = (qId) => {
     if (myClaimedId || mySubmitted) return;
@@ -308,36 +324,73 @@ function App() {
     setAnswerInput("");
   };
 
-  const resetBoard = () => { storageClear(); setBoardData({}); setMyClaimedId(null); setMySubmitted(false); };
-
-  // Feedback helpers
-  const loadFeedback = () => { setFeedbackData(feedbackGet()); };
-
-  const submitFeedback = (value) => {
-    if (feedbackSubmitted) return;
-    const face = FEEDBACK_FACES.find(f => f.value === value);
-    feedbackAdd({ name: userName, value, label: face?.label, time: Date.now() });
-    setMyFeedback(value);
-    setFeedbackSubmitted(true);
-    loadFeedback();
+  const resetBoard = async () => {
+    localStorage.removeItem(STORAGE_KEY);
+    await apiDelete("/api/board");
+    setBoardData({}); setMyClaimedId(null); setMySubmitted(false);
   };
 
-  const resetFeedback = () => { feedbackClear(); setFeedbackData([]); setMyFeedback(null); setFeedbackSubmitted(false); };
+  // ---- Feedback storage (API + localStorage) ----
+  const loadFeedback = useCallback(async () => {
+    const remote = await apiFetch("/api/feedback");
+    if (remote && Array.isArray(remote) && remote.length > 0) {
+      localSet(FEEDBACK_KEY, remote);
+      setFeedbackData(remote);
+    } else {
+      setFeedbackData(localGet(FEEDBACK_KEY, []));
+    }
+  }, []);
+
+  const submitFeedback = async (value) => {
+    if (feedbackSubmitted) return;
+    const face = FEEDBACK_FACES.find(f => f.value === value);
+    const entry = { name: userName, value, label: face?.label, time: Date.now() };
+    // Save locally
+    const local = localGet(FEEDBACK_KEY, []);
+    local.push(entry);
+    localSet(FEEDBACK_KEY, local);
+    setMyFeedback(value);
+    setFeedbackSubmitted(true);
+    // Save to API
+    const updated = await apiPost("/api/feedback", entry);
+    if (updated) { localSet(FEEDBACK_KEY, updated); setFeedbackData(updated); }
+    else { setFeedbackData(local); }
+  };
+
+  const resetFeedback = async () => {
+    localStorage.removeItem(FEEDBACK_KEY);
+    await apiDelete("/api/feedback");
+    setFeedbackData([]); setMyFeedback(null); setFeedbackSubmitted(false);
+  };
 
   useEffect(() => {
     if (view === "feedback") {
       loadFeedback();
-      // Check if this user already submitted
-      const existing = feedbackGet().find(f => f.name === userName);
+      // Check if this user already submitted (from localStorage or API data)
+      const existing = localGet(FEEDBACK_KEY, []).find(f => f.name === userName);
       if (existing) { setMyFeedback(existing.value); setFeedbackSubmitted(true); }
       feedbackPollRef.current = setInterval(loadFeedback, 3000);
       return () => clearInterval(feedbackPollRef.current);
     }
-  }, [view]);
+  }, [view, loadFeedback, userName]);
 
   useEffect(() => {
-    if (view === "icebreaker") { loadBoard(); pollRef.current = setInterval(loadBoard, 3000); return () => clearInterval(pollRef.current); }
-  }, [view]);
+    if (view === "icebreaker") {
+      loadBoard();
+      pollRef.current = setInterval(loadBoard, 3000);
+      return () => clearInterval(pollRef.current);
+    }
+  }, [view, loadBoard]);
+
+  // Instant cross-tab sync via storage event
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === STORAGE_KEY) setBoardData(localGet(STORAGE_KEY, {}));
+      if (e.key === FEEDBACK_KEY) setFeedbackData(localGet(FEEDBACK_KEY, []));
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   useEffect(() => {
     if (view === "icebreaker" && userName && Object.keys(boardData).length > 0) {
@@ -372,7 +425,6 @@ function App() {
   // Build custom prompt (Step 1)
   const buildCustomPrompt = () => {
     if (!lessonInfo.title) return;
-    const rt = lessonInfo.resourceType ? resourceDesc(lessonInfo.resourceType) : "any suitable format";
     const prompt = `I teach a lesson called "${lessonInfo.title}".
 
 LEARNING OUTCOMES students must demonstrate:
@@ -381,7 +433,7 @@ ${formatOutcomes(lessonInfo.outcomes)}
 ${lessonInfo.methods ? `I currently assess this using: ${lessonInfo.methods}` : ""}
 ${lessonInfo.frustrations ? `My main frustration with current assessment: ${lessonInfo.frustrations}` : ""}
 
-DESIRED RESOURCE TYPE: ${rt}
+DESIRED OUTPUT: A single self-contained HTML website file I can upload to SharePoint.
 
 Please design a complete, ready-to-use assessment resource that:
 - Aligns EVERY question/task directly to one or more of the learning outcomes above
@@ -390,7 +442,7 @@ Please design a complete, ready-to-use assessment resource that:
 - Engages students more than a standard written test
 - Includes model answers or expected responses
 
-${lessonInfo.resourceType ? resourceFormatInstructions(lessonInfo.resourceType) : ""}
+${resourceFormatInstructions("website")}
 
 Provide the complete resource ready for me to use, not just suggestions.`;
     setGeneratedPrompt(prompt);
@@ -404,6 +456,21 @@ Provide the complete resource ready for me to use, not just suggestions.`;
   };
 
   const handlePrint = () => { window.print(); };
+
+  // QR code overlay
+  const qrOverlay = showQR && (
+    <div style={S.overlay} onClick={() => setShowQR(false)}>
+      <div style={S.qrCard} onClick={e => e.stopPropagation()}>
+        <button style={S.qrClose} onClick={() => setShowQR(false)}><X size={18} /></button>
+        <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 700 }}>Join this session</h3>
+        <p style={{ margin: "0 0 16px", fontSize: 12, color: "#5e7080" }}>Scan the QR code or tap the link below</p>
+        <QRCodeSVG value={typeof window !== "undefined" ? window.location.href : ""} size={200} bgColor="transparent" fgColor="#dde4ed" />
+        <p style={{ margin: "14px 0 0", fontSize: 11, color: "#63b3ed", wordBreak: "break-all", maxWidth: 240, textAlign: "center" }}>
+          {typeof window !== "undefined" ? window.location.href : ""}
+        </p>
+      </div>
+    </div>
+  );
 
   // ===== PRINT VIEW =====
   if (showPrint) {
@@ -430,8 +497,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
         <div className="print-body">
           <h1 style={{ fontSize: 22, marginBottom: 4, borderBottom: "2px solid #222", paddingBottom: 8 }}>Assessment Resource</h1>
           <p style={{ fontSize: 12, color: "#666", marginBottom: 20 }}>
-            Lesson: <strong>{lessonInfo.title || "Untitled"}</strong>
-            {lessonInfo.resourceType && <> &bull; Format: <strong>{resourceDesc(lessonInfo.resourceType)}</strong></>}
+            Lesson: <strong>{lessonInfo.title || "Untitled"}</strong> &bull; Format: <strong>Self-contained website</strong>
           </p>
           <hr style={{ border: "none", borderTop: "1px solid #ddd", margin: "0 0 20px" }} />
           <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", fontFamily: "inherit", fontSize: 13, lineHeight: 1.7 }}>
@@ -449,7 +515,9 @@ Provide the complete resource ready for me to use, not just suggestions.`;
   if (!nameSet) {
     return (
       <div style={S.page}>
+        {qrOverlay}
         <div style={S.nameGate}>
+          <button style={S.qrBtn} onClick={() => setShowQR(true)}><QrCode size={18} /></button>
           <div style={S.chipBadge}>CPD SESSION</div>
           <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
           <p style={S.heroSub}>A 50-minute interactive workshop</p>
@@ -481,7 +549,9 @@ Provide the complete resource ready for me to use, not just suggestions.`;
   if (view === "welcome") {
     return (
       <div style={S.page}>
+        {qrOverlay}
         <div style={S.welcomeWrap}>
+          <button style={{ ...S.qrBtn, position: "fixed", top: 16, right: 16 }} onClick={() => setShowQR(true)}><QrCode size={18} /></button>
           <div style={S.chipBadge}>CPD SESSION</div>
           <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
           <p style={{ color: "#6b7f92", margin: "0 0 20px", fontSize: 15 }}>
@@ -523,10 +593,14 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
     return (
       <div style={S.page}>
+        {qrOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
           <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Dices size={16} /> The Worst Best Business</span>
-          <span style={S.barBadge}>{totalAnswered}/{BUSINESS_QUESTIONS.length}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
+            <span style={S.barBadge}>{totalAnswered}/{BUSINESS_QUESTIONS.length}</span>
+          </div>
         </div>
         <div style={S.track}><div style={{ ...S.fill, width: `${(totalAnswered / BUSINESS_QUESTIONS.length) * 100}%` }} /></div>
 
@@ -623,16 +697,20 @@ Provide the complete resource ready for me to use, not just suggestions.`;
   // ===== WORKSHOP =====
   if (view === "workshop") {
     if (!nameSet) { setView("welcome"); return null; }
-    const readyForTemplates = lessonInfo.title && lessonInfo.outcomes && lessonInfo.resourceType;
+    const readyForTemplates = lessonInfo.title && lessonInfo.outcomes;
 
     return (
       <div style={S.page}>
+        {qrOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
           <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Wrench size={16} /> Assessment Design Workshop</span>
-          <button style={{ ...S.btn, ...S.btnSm, ...(showEthics ? S.btnAct : S.btnG), display: "flex", alignItems: "center", gap: 5 }} onClick={() => setShowEthics(!showEthics)}>
-            <Scale size={13} /> Ethics
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
+            <button style={{ ...S.btn, ...S.btnSm, ...(showEthics ? S.btnAct : S.btnG), display: "flex", alignItems: "center", gap: 5 }} onClick={() => setShowEthics(!showEthics)}>
+              <Scale size={13} /> Ethics
+            </button>
+          </div>
         </div>
 
         <div style={S.workshopWrap}>
@@ -669,22 +747,12 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                   value={lessonInfo.outcomes} onChange={e => setLessonInfo(p => ({ ...p, outcomes: e.target.value }))} />
               </div>
 
-              {/* RESOURCE TYPE PICKER */}
-              <div style={S.fld}>
-                <label style={S.lbl}>What type of resource do you want? *</label>
-                <div style={S.rtGrid}>
-                  {RESOURCE_TYPES.map(rt => {
-                    const active = lessonInfo.resourceType === rt.id;
-                    return (
-                      <div key={rt.id}
-                        onClick={() => setLessonInfo(p => ({ ...p, resourceType: rt.id }))}
-                        style={{ ...S.rtCard, ...(active ? S.rtCardActive : {}) }}>
-                        <rt.Icon size={20} style={{ color: active ? "#63b3ed" : "#7a8ea0", marginBottom: 2 }} />
-                        <strong style={{ fontSize: 12, color: active ? "#63b3ed" : "#c0cdd8" }}>{rt.label}</strong>
-                        <p style={{ fontSize: 10, color: "#5e7080", margin: "2px 0 0", lineHeight: 1.4 }}>{rt.desc}</p>
-                      </div>
-                    );
-                  })}
+              {/* OUTPUT FORMAT — locked to website */}
+              <div style={{ ...S.rtCard, ...S.rtCardActive, flexDirection: "row", gap: 10, alignItems: "center" }}>
+                <Globe size={22} style={{ color: "#63b3ed", flexShrink: 0 }} />
+                <div>
+                  <strong style={{ fontSize: 13, color: "#63b3ed" }}>Output: Self-Contained Website</strong>
+                  <p style={{ fontSize: 11, color: "#5e7080", margin: "2px 0 0", lineHeight: 1.4 }}>{RESOURCE_TYPE_WEBSITE.desc}</p>
                 </div>
               </div>
 
@@ -707,14 +775,14 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                 <ul style={{ margin: "6px 0 0", paddingLeft: 18, fontSize: 12, color: "#8aa", lineHeight: 1.6 }}>
                   <li><strong>Topic:</strong> {lessonInfo.title}</li>
                   {lessonInfo.outcomes && <li><strong>Outcomes:</strong> {lessonInfo.outcomes.split("\n").filter(Boolean).length} learning outcome(s)</li>}
-                  {lessonInfo.resourceType && <li><strong>Format:</strong> {resourceDesc(lessonInfo.resourceType)}</li>}
+                  <li><strong>Format:</strong> Self-contained website (HTML file)</li>
                   {lessonInfo.methods && <li><strong>Current method:</strong> {lessonInfo.methods}</li>}
                   {lessonInfo.frustrations && <li><strong>Frustration:</strong> {lessonInfo.frustrations}</li>}
                 </ul>
               </div>
             )}
 
-            <button style={{ ...S.btn, ...S.btnP, marginTop: 14, display: "flex", alignItems: "center", gap: 8, opacity: (lessonInfo.title && lessonInfo.resourceType) ? 1 : 0.4 }} onClick={buildCustomPrompt}>
+            <button style={{ ...S.btn, ...S.btnP, marginTop: 14, display: "flex", alignItems: "center", gap: 8, opacity: lessonInfo.title ? 1 : 0.4 }} onClick={buildCustomPrompt}>
               <Copy size={15} /> Generate & Copy My Custom Prompt
             </button>
 
@@ -736,7 +804,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             <p style={S.secDesc}>
               {readyForTemplates
                 ? <>Your lesson info is pre-filled into each template. Click to preview, then copy.</>
-                : <><AlertTriangle size={13} style={{ color: "#fbbf24", verticalAlign: "middle" }} /> <span style={{ color: "#fbbf24" }}>Fill in Step 1 first</span> (at least title, outcomes, and resource type) so the templates are pre-filled with your info.</>
+                : <><AlertTriangle size={13} style={{ color: "#fbbf24", verticalAlign: "middle" }} /> <span style={{ color: "#fbbf24" }}>Fill in Step 1 first</span> (at least title and outcomes) so the templates are pre-filled with your info.</>
               }
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -825,10 +893,14 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
     return (
       <div style={S.page}>
+        {qrOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("workshop")}><ChevronLeft size={15} /> Back</button>
           <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><MessageSquare size={16} /> Session Feedback</span>
-          <span style={S.barBadge}>{feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
+            <span style={S.barBadge}>{feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}</span>
+          </div>
         </div>
 
         <div style={S.feedbackWrap}>
@@ -992,7 +1064,7 @@ const S = {
     borderRadius: 10, padding: "12px 16px", marginBottom: 18,
   },
 
-  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))", gap: 9, marginBottom: 18 },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(170px, 100%), 1fr))", gap: 9, marginBottom: 18 },
   card: {
     background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)",
     borderRadius: 11, padding: "14px 13px", transition: "all 0.2s", minHeight: 105,
@@ -1110,7 +1182,7 @@ const S = {
   // Name gate (full-screen entry)
   nameGate: {
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-    minHeight: "100dvh", padding: "40px 20px", textAlign: "center",
+    minHeight: "100dvh", padding: "40px 20px", textAlign: "center", position: "relative",
   },
   nameBox: {
     display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
@@ -1153,6 +1225,31 @@ const S = {
     display: "flex", alignItems: "center", gap: 6,
     background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
     borderRadius: 20, padding: "4px 10px",
+  },
+
+  // QR code overlay
+  overlay: {
+    position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(6px)",
+    display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
+  },
+  qrCard: {
+    background: "linear-gradient(145deg, #1a2436, #151e2d)", border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 18, padding: "32px 28px", textAlign: "center", position: "relative", maxWidth: 320,
+  },
+  qrClose: {
+    position: "absolute", top: 10, right: 10, background: "none", border: "none",
+    color: "#556", cursor: "pointer",
+  },
+  qrBtn: {
+    position: "absolute", top: 16, right: 16,
+    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 8, padding: "8px", cursor: "pointer", color: "#63b3ed",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  qrBtnSm: {
+    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 6, padding: "4px 6px", cursor: "pointer", color: "#63b3ed",
+    display: "flex", alignItems: "center", justifyContent: "center",
   },
 };
 
