@@ -1,4 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  Dices, Wrench, MessageSquare, Scale, Printer, Clipboard, Copy, Check, CheckCircle2,
+  AlertTriangle, Flag, Lightbulb, BarChart2, Link, RefreshCw, Zap,
+  ChevronUp, ChevronDown, ChevronLeft,
+  MousePointerClick, FileText, Globe, LayoutDashboard, FlaskConical, Video,
+  Eye, Lock, Target, ClipboardCheck, ClipboardList,
+  Info, HelpCircle, BookOpen, Layers, User,
+} from "lucide-react";
 
 const STORAGE_KEY = "biz-board-v2";
 const FEEDBACK_KEY = "session-feedback-v1";
@@ -44,12 +52,12 @@ const FEEDBACK_FACES = [
 ];
 
 const RESOURCE_TYPES = [
-  { id: "interactive", label: "Interactive / Digital", icon: "\u{1F4BB}", desc: "Drag-and-drop, clickable, auto-marked online activity" },
-  { id: "paper", label: "Paper-Based", icon: "\u{1F4C4}", desc: "Printable worksheet, exam paper, or booklet" },
-  { id: "website", label: "Website / Web App", icon: "\u{1F310}", desc: "A single self-contained HTML file I can upload to SharePoint or share directly" },
-  { id: "presentation", label: "Presentation / Slides", icon: "\u{1F4CA}", desc: "PowerPoint / Google Slides with embedded tasks" },
-  { id: "practical", label: "Practical / Hands-On", icon: "\u{1F9EA}", desc: "Observation checklist, lab task, or physical activity" },
-  { id: "video", label: "Video-Based", icon: "\u{1F3AC}", desc: "Video scenario with questions or a student-produced video task" },
+  { id: "interactive", label: "Interactive / Digital", Icon: MousePointerClick, desc: "Drag-and-drop, clickable, auto-marked online activity" },
+  { id: "paper", label: "Paper-Based", Icon: FileText, desc: "Printable worksheet, exam paper, or booklet" },
+  { id: "website", label: "Website / Web App", Icon: Globe, desc: "A single self-contained HTML file I can upload to SharePoint or share directly" },
+  { id: "presentation", label: "Presentation / Slides", Icon: LayoutDashboard, desc: "PowerPoint / Google Slides with embedded tasks" },
+  { id: "practical", label: "Practical / Hands-On", Icon: FlaskConical, desc: "Observation checklist, lab task, or physical activity" },
+  { id: "video", label: "Video-Based", Icon: Video, desc: "Video scenario with questions or a student-produced video task" },
 ];
 
 const BUSINESS_QUESTIONS = [
@@ -66,12 +74,12 @@ const BUSINESS_QUESTIONS = [
 ];
 
 const ETHICS_POINTS = [
-  { icon: "\u{1F441}\uFE0F", title: "Always Review", desc: "AI output is a first draft, never a final product. Check for accuracy, bias, and relevance to YOUR students." },
-  { icon: "\u2696\uFE0F", title: "Bias Awareness", desc: "AI can reflect societal biases. Review for inclusive language, diverse examples, and cultural sensitivity." },
-  { icon: "\u{1F512}", title: "Data Privacy", desc: "Never paste student names, data, or sensitive info into AI tools. Keep prompts anonymous." },
-  { icon: "\u{1F3AF}", title: "Pedagogical Judgement", desc: "You know your students. AI doesn\u2019t. Always adapt outputs to your class context and individual needs." },
-  { icon: "\u{1F4D0}", title: "Quality Assurance", desc: "Cross-check AI-generated answers and marking criteria against your subject expertise and awarding body standards." },
-  { icon: "\u{1F4A1}", title: "Transparency", desc: "Be open with colleagues about AI use. Share what works. Build a culture of ethical experimentation." },
+  { Icon: Eye, title: "Always Review", desc: "AI output is a first draft, never a final product. Check for accuracy, bias, and relevance to YOUR students." },
+  { Icon: Scale, title: "Bias Awareness", desc: "AI can reflect societal biases. Review for inclusive language, diverse examples, and cultural sensitivity." },
+  { Icon: Lock, title: "Data Privacy", desc: "Never paste student names, data, or sensitive info into AI tools. Keep prompts anonymous." },
+  { Icon: Target, title: "Pedagogical Judgement", desc: "You know your students. AI doesn\u2019t. Always adapt outputs to your class context and individual needs." },
+  { Icon: ClipboardCheck, title: "Quality Assurance", desc: "Cross-check AI-generated answers and marking criteria against your subject expertise and awarding body standards." },
+  { Icon: Lightbulb, title: "Transparency", desc: "Be open with colleagues about AI use. Share what works. Build a culture of ethical experimentation." },
 ];
 
 // ============ PROMPT TEMPLATE BUILDER ============
@@ -130,7 +138,7 @@ function resourceFormatInstructions(type) {
 const PROMPT_TEMPLATES = [
   {
     title: "Quick Quiz Generator",
-    icon: "\u{1F4DD}",
+    Icon: HelpCircle,
     build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
 
 LEARNING OUTCOMES students must demonstrate:
@@ -155,7 +163,7 @@ Also provide a separate MARKING GUIDE with acceptable alternative answers.`
   },
   {
     title: "Scenario-Based Assessment",
-    icon: "\u{1F3AD}",
+    Icon: BookOpen,
     build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
 
 LEARNING OUTCOMES students must demonstrate:
@@ -180,7 +188,7 @@ ${resourceFormatInstructions(info.resourceType)}`
   },
   {
     title: "Differentiated Assessment Pack",
-    icon: "\u{1F39A}\uFE0F",
+    Icon: Layers,
     build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
 
 LEARNING OUTCOMES (all three versions must assess THESE SAME outcomes):
@@ -215,7 +223,7 @@ ${resourceFormatInstructions(info.resourceType)}`
   },
   {
     title: "Practical Skills Checklist",
-    icon: "\u{1F527}",
+    Icon: ClipboardList,
     build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
 
 LEARNING OUTCOMES / SKILLS students must demonstrate:
@@ -415,8 +423,8 @@ Provide the complete resource ready for me to use, not just suggestions.`;
           }
         `}</style>
         <div className="print-toolbar">
-          <button style={{ ...S.btn, ...S.btnG }} onClick={() => setShowPrint(false)}>&larr; Back to Workshop</button>
-          <button style={{ ...S.btn, ...S.btnP }} onClick={handlePrint}>{"\u{1F5A8}\uFE0F"} Print / Save as PDF</button>
+          <button style={{ ...S.btn, ...S.btnG, display: "flex", alignItems: "center", gap: 6 }} onClick={() => setShowPrint(false)}><ChevronLeft size={14} /> Back to Workshop</button>
+          <button style={{ ...S.btn, ...S.btnP, display: "flex", alignItems: "center", gap: 7 }} onClick={handlePrint}><Printer size={15} /> Print / Save as PDF</button>
           <span style={{ fontSize: 12, color: "#888", marginLeft: "auto" }}>Tip: Use &ldquo;Save as PDF&rdquo; in the print dialog for a digital copy</span>
         </div>
         <div className="print-body">
@@ -437,55 +445,71 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     );
   }
 
-  // ===== WELCOME =====
+  // ===== NAME ENTRY (full-screen gate) =====
+  if (!nameSet) {
+    return (
+      <div style={S.page}>
+        <div style={S.nameGate}>
+          <div style={S.chipBadge}>CPD SESSION</div>
+          <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
+          <p style={S.heroSub}>A 50-minute interactive workshop</p>
+
+          <div style={S.nameBox}>
+            <User size={36} style={{ color: "#63b3ed", opacity: 0.8 }} />
+            <h2 style={{ fontSize: 20, fontWeight: 700, margin: "4px 0 2px" }}>What&apos;s your first name?</h2>
+            <p style={{ fontSize: 13, color: "#5e7080", margin: "0 0 16px" }}>We need this so your responses show up on the board.</p>
+            <input style={{ ...S.heroInput, maxWidth: 320, fontSize: 18, padding: "14px 16px" }}
+              placeholder="Type your name..."
+              value={userName} onChange={e => setUserName(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && userName.trim() && setNameSet(true)}
+              autoFocus />
+            <button style={{ ...S.btn, ...S.btnP, ...S.btnLg, marginTop: 8, opacity: userName.trim() ? 1 : 0.4 }}
+              onClick={() => userName.trim() && setNameSet(true)}>
+              Let&apos;s Go &rarr;
+            </button>
+          </div>
+
+          <button style={S.skipBtn} onClick={() => { setUserName("Facilitator"); setNameSet(true); setFacilitatorMode(true); }}>
+            Skip &mdash; I&apos;m the facilitator
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== WELCOME (main nav, only shown after name entered) =====
   if (view === "welcome") {
     return (
       <div style={S.page}>
         <div style={S.welcomeWrap}>
           <div style={S.chipBadge}>CPD SESSION</div>
           <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
-          <p style={S.heroSub}>A 50-minute interactive workshop</p>
+          <p style={{ color: "#6b7f92", margin: "0 0 20px", fontSize: 15 }}>
+            Welcome, <strong style={{ color: "#dde4ed" }}>{userName}</strong>!
+          </p>
           <div style={S.agenda}>
             {[
-              { t: "12 min", i: "\u{1F3B2}", l: "The Worst Best Business", d: "Claim a question, build a ridiculous startup together" },
-              { t: "33 min", i: "\u{1F6E0}\uFE0F", l: "Assessment Design Workshop", d: "Use Copilot to design a real assessment for your lesson" },
-              { t: "5 min", i: "\u2696\uFE0F", l: "Ethics & Takeaways", d: "Responsible AI use \u2014 what to watch for" },
+              { t: "12 min", Icon: Dices, l: "The Worst Best Business", d: "Claim a question, build a ridiculous startup together" },
+              { t: "33 min", Icon: Wrench, l: "Assessment Design Workshop", d: "Use Copilot to design a real assessment for your lesson" },
+              { t: "5 min", Icon: Scale, l: "Ethics & Takeaways", d: "Responsible AI use \u2014 what to watch for" },
             ].map((a, i) => (
               <div key={i}>
                 {i > 0 && <div style={S.sep} />}
                 <div style={S.agendaRow}>
                   <span style={S.timePill}>{a.t}</span>
-                  <div><strong style={{ fontSize: 14 }}>{a.i} {a.l}</strong><p style={S.agendaD}>{a.d}</p></div>
+                  <div><strong style={{ fontSize: 14, display: "flex", alignItems: "center", gap: 5 }}><a.Icon size={13} style={{ opacity: 0.7 }} /> {a.l}</strong><p style={S.agendaD}>{a.d}</p></div>
                 </div>
               </div>
             ))}
           </div>
-          {!nameSet ? (
-            <div style={S.stack}>
-              <div style={S.namePrompt}>
-                <span style={{ fontSize: 28 }}>{"\u{1F44B}"}</span>
-                <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>First, tell us your name</h2>
-                <p style={{ fontSize: 13, color: "#5e7080", margin: 0 }}>This is needed so your responses are linked to you.</p>
-              </div>
-              <input style={S.heroInput} placeholder="Your first name..."
-                value={userName} onChange={e => setUserName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && userName.trim() && setNameSet(true)}
-                autoFocus />
-              <button style={{ ...S.btn, ...S.btnP, opacity: userName.trim() ? 1 : 0.4 }}
-                onClick={() => userName.trim() && setNameSet(true)}>Join Session &rarr;</button>
-            </div>
-          ) : (
-            <div style={S.stack}>
-              <p style={{ color: "#6b7f92", margin: 0 }}>Welcome, <strong style={{ color: "#dde4ed" }}>{userName}</strong>!</p>
-              <button style={{ ...S.btn, ...S.btnP }} onClick={() => setView("icebreaker")}>{"\u{1F3B2}"} Start Icebreaker</button>
-              <button style={{ ...S.btn, ...S.btnG }} onClick={() => setView("workshop")}>{"\u{1F6E0}\uFE0F"} Jump to Workshop</button>
-              <button style={{ ...S.btn, ...S.btnG }} onClick={() => setView("feedback")}>{"\u{1F4AC}"} Session Feedback</button>
-              <label style={S.tog}>
-                <input type="checkbox" checked={facilitatorMode} onChange={e => setFacilitatorMode(e.target.checked)} />
-                <span style={{ fontSize: 13, color: "#556" }}>I&apos;m the facilitator</span>
-              </label>
-            </div>
-          )}
+          <div style={S.stack}>
+            <button style={{ ...S.btn, ...S.btnP, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("icebreaker")}><Dices size={16} /> Start Icebreaker</button>
+            <button style={{ ...S.btn, ...S.btnG, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("workshop")}><Wrench size={16} /> Jump to Workshop</button>
+            <button style={{ ...S.btn, ...S.btnG, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("feedback")}><MessageSquare size={16} /> Session Feedback</button>
+            {facilitatorMode && (
+              <span style={{ fontSize: 11, color: "#e87", marginTop: 4 }}>Facilitator mode active</span>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -500,8 +524,8 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         <div style={S.bar}>
-          <button style={S.back} onClick={() => setView("welcome")}>&larr; Back</button>
-          <span style={S.barTitle}>{"\u{1F3B2}"} The Worst Best Business</span>
+          <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
+          <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Dices size={16} /> The Worst Best Business</span>
           <span style={S.barBadge}>{totalAnswered}/{BUSINESS_QUESTIONS.length}</span>
         </div>
         <div style={S.track}><div style={{ ...S.fill, width: `${(totalAnswered / BUSINESS_QUESTIONS.length) * 100}%` }} /></div>
@@ -543,7 +567,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                   </div>
                   <strong style={{ fontSize: 13, color: "#c0cdd8", display: "block", marginBottom: 4 }}>{q.label}</strong>
                   {status === "done" && entry && (<><p style={{ fontSize: 12, fontStyle: "italic", color: "#7a9aaa", margin: "2px 0 4px", lineHeight: 1.4 }}>&ldquo;{entry.answer}&rdquo;</p><span style={{ fontSize: 11, color: "#4ade80", fontWeight: 600 }}>&mdash; {entry.name}</span></>)}
-                  {status === "claimed" && !entry?.answer && (<p style={{ fontSize: 12, color: "#fbbf24", margin: "4px 0 0" }}>{isMine ? "\u270F\uFE0F You claimed this!" : `\u23F3 ${entry?.name} is writing...`}</p>)}
+                  {status === "claimed" && !entry?.answer && (<p style={{ fontSize: 12, color: "#fbbf24", margin: "4px 0 0", display: "flex", alignItems: "center", gap: 4 }}>{isMine ? <><Pencil size={11} /> You claimed this!</> : <><Clock size={11} /> {entry?.name} is writing...</>}</p>)}
                   {status === "open" && canClaim && (<p style={{ fontSize: 11, color: "#4a6070", margin: "auto 0 0", paddingTop: 4 }}>Click to claim</p>)}
                   {status === "open" && !canClaim && (<p style={{ fontSize: 11, color: "#334050", margin: "auto 0 0", fontStyle: "italic", paddingTop: 4 }}>Available</p>)}
                 </div>
@@ -571,21 +595,21 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
           {mySubmitted && !allComplete && (
             <div style={S.doneBox}>
-              <span style={{ fontSize: 26 }}>{"\u2705"}</span>
+              <CheckCircle2 size={26} style={{ color: "#4ade80", flexShrink: 0 }} />
               <p style={{ margin: 0, fontSize: 15 }}><strong>You&apos;re in!</strong> Your answer is on the board. Watch the others fill in the gaps...</p>
             </div>
           )}
 
           {allComplete && (
             <div style={{ textAlign: "center", marginTop: 12 }}>
-              <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 6px" }}>{"\u{1F3C1}"} The business is complete!</h2>
+              <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><Flag size={22} /> The business is complete!</h2>
               <p style={{ color: "#7a8ea0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>Every question answered. Copy the brief below and paste it into Claude to generate a website live.</p>
               <div style={S.briefBox}><pre style={S.briefPre}>{buildBrief()}</pre></div>
-              <button style={{ ...S.btn, ...S.btnP, ...S.btnLg, marginTop: 4 }} onClick={copyBrief}>
-                {briefCopied ? "\u2713 Copied to clipboard!" : "\u{1F4CB} Copy Brief to Clipboard"}
+              <button style={{ ...S.btn, ...S.btnP, ...S.btnLg, marginTop: 4, display: "flex", alignItems: "center", gap: 8, margin: "4px auto 0" }} onClick={copyBrief}>
+                {briefCopied ? <><Check size={16} /> Copied to clipboard!</> : <><Clipboard size={16} /> Copy Brief to Clipboard</>}
               </button>
               <div style={S.briefNote}>
-                <strong>{"\u{1F4A1}"} What just happened:</strong> Each of you contributed one piece of creative input. Now AI will synthesise it
+                <strong style={{ display: "flex", alignItems: "center", gap: 6 }}><Lightbulb size={14} /> What just happened:</strong> Each of you contributed one piece of creative input. Now AI will synthesise it
                 into a structured website &mdash; messy human creativity &rarr; polished output. That&apos;s exactly the skill you&apos;ll use next to design assessments with Copilot.
               </div>
               <button style={{ ...S.btn, ...S.btnG, marginTop: 14 }} onClick={() => setView("workshop")}>Continue to Workshop &rarr;</button>
@@ -604,21 +628,21 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         <div style={S.bar}>
-          <button style={S.back} onClick={() => setView("welcome")}>&larr; Back</button>
-          <span style={S.barTitle}>{"\u{1F6E0}\uFE0F"} Assessment Design Workshop</span>
-          <button style={{ ...S.btn, ...S.btnSm, ...(showEthics ? S.btnAct : S.btnG) }} onClick={() => setShowEthics(!showEthics)}>
-            {"\u2696\uFE0F"} Ethics
+          <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
+          <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Wrench size={16} /> Assessment Design Workshop</span>
+          <button style={{ ...S.btn, ...S.btnSm, ...(showEthics ? S.btnAct : S.btnG), display: "flex", alignItems: "center", gap: 5 }} onClick={() => setShowEthics(!showEthics)}>
+            <Scale size={13} /> Ethics
           </button>
         </div>
 
         <div style={S.workshopWrap}>
           {showEthics && (
             <div style={S.ethPanel}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 12px", color: "#fbbf24" }}>{"\u2696\uFE0F"} Using AI Responsibly</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 12px", color: "#fbbf24", display: "flex", alignItems: "center", gap: 8 }}><Scale size={16} style={{ opacity: 0.8 }} /> Using AI Responsibly</h3>
               <div style={S.ethGrid}>
                 {ETHICS_POINTS.map((p, i) => (
                   <div key={i} style={S.ethCard}>
-                    <span style={{ fontSize: 22 }}>{p.icon}</span>
+                    <p.Icon size={20} style={{ color: "#63b3ed", marginBottom: 4 }} />
                     <strong style={{ fontSize: 13 }}>{p.title}</strong>
                     <p style={{ fontSize: 11, color: "#7a8ea0", margin: "4px 0 0", lineHeight: 1.5 }}>{p.desc}</p>
                   </div>
@@ -655,7 +679,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                       <div key={rt.id}
                         onClick={() => setLessonInfo(p => ({ ...p, resourceType: rt.id }))}
                         style={{ ...S.rtCard, ...(active ? S.rtCardActive : {}) }}>
-                        <span style={{ fontSize: 22 }}>{rt.icon}</span>
+                        <rt.Icon size={20} style={{ color: active ? "#63b3ed" : "#7a8ea0", marginBottom: 2 }} />
                         <strong style={{ fontSize: 12, color: active ? "#63b3ed" : "#c0cdd8" }}>{rt.label}</strong>
                         <p style={{ fontSize: 10, color: "#5e7080", margin: "2px 0 0", lineHeight: 1.4 }}>{rt.desc}</p>
                       </div>
@@ -679,7 +703,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             {/* Summary of what Step 1 captured */}
             {lessonInfo.title && (
               <div style={S.summaryBox}>
-                <strong style={{ fontSize: 12, color: "#63b3ed" }}>{"\u2139\uFE0F"} Your info will be injected into every template below:</strong>
+                <strong style={{ fontSize: 12, color: "#63b3ed", display: "flex", alignItems: "center", gap: 5 }}><Info size={12} /> Your info will be injected into every template below:</strong>
                 <ul style={{ margin: "6px 0 0", paddingLeft: 18, fontSize: 12, color: "#8aa", lineHeight: 1.6 }}>
                   <li><strong>Topic:</strong> {lessonInfo.title}</li>
                   {lessonInfo.outcomes && <li><strong>Outcomes:</strong> {lessonInfo.outcomes.split("\n").filter(Boolean).length} learning outcome(s)</li>}
@@ -690,15 +714,15 @@ Provide the complete resource ready for me to use, not just suggestions.`;
               </div>
             )}
 
-            <button style={{ ...S.btn, ...S.btnP, marginTop: 14, opacity: (lessonInfo.title && lessonInfo.resourceType) ? 1 : 0.4 }} onClick={buildCustomPrompt}>
-              {"\u{1F4CB}"} Generate & Copy My Custom Prompt
+            <button style={{ ...S.btn, ...S.btnP, marginTop: 14, display: "flex", alignItems: "center", gap: 8, opacity: (lessonInfo.title && lessonInfo.resourceType) ? 1 : 0.4 }} onClick={buildCustomPrompt}>
+              <Copy size={15} /> Generate & Copy My Custom Prompt
             </button>
 
             {generatedPrompt && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                  <p style={S.copiedBanner}>{"\u2713"} Copied to clipboard &mdash; paste into Copilot</p>
-                  <button style={{ ...S.btn, ...S.btnSm, ...S.btnG }} onClick={() => openPrintView(generatedPrompt)}>{"\u{1F5A8}\uFE0F"} Print</button>
+                  <p style={{ ...S.copiedBanner, display: "flex", alignItems: "center", gap: 6 }}><Check size={14} /> Copied to clipboard &mdash; paste into Copilot</p>
+                  <button style={{ ...S.btn, ...S.btnSm, ...S.btnG, display: "flex", alignItems: "center", gap: 5 }} onClick={() => openPrintView(generatedPrompt)}><Printer size={13} /> Print</button>
                 </div>
                 <pre style={S.codePre}>{generatedPrompt}</pre>
               </div>
@@ -712,7 +736,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             <p style={S.secDesc}>
               {readyForTemplates
                 ? <>Your lesson info is pre-filled into each template. Click to preview, then copy.</>
-                : <><span style={{ color: "#fbbf24" }}>{"\u26A0\uFE0F"} Fill in Step 1 first</span> (at least title, outcomes, and resource type) so the templates are pre-filled with your info.</>
+                : <><AlertTriangle size={13} style={{ color: "#fbbf24", verticalAlign: "middle" }} /> <span style={{ color: "#fbbf24" }}>Fill in Step 1 first</span> (at least title, outcomes, and resource type) so the templates are pre-filled with your info.</>
               }
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -721,20 +745,20 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                 return (
                   <div key={i} style={S.tmpl}>
                     <div style={S.tmplHead} onClick={() => setActiveTemplate(activeTemplate === i ? null : i)}>
-                      <span style={{ fontSize: 20 }}>{t.icon}</span>
+                      <t.Icon size={18} style={{ color: "#63b3ed", flexShrink: 0 }} />
                       <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{t.title}</span>
-                      {readyForTemplates && <span style={{ fontSize: 10, color: "#4ade80", marginRight: 6 }}>{"\u2705"} Pre-filled</span>}
-                      <span style={{ fontSize: 11, color: "#556" }}>{activeTemplate === i ? "\u25B2" : "\u25BC"}</span>
+                      {readyForTemplates && <span style={{ fontSize: 10, color: "#4ade80", display: "flex", alignItems: "center", gap: 3, marginRight: 6 }}><Check size={10} /> Pre-filled</span>}
+                      {activeTemplate === i ? <ChevronUp size={14} style={{ color: "#556" }} /> : <ChevronDown size={14} style={{ color: "#556" }} />}
                     </div>
                     {activeTemplate === i && (
                       <div style={{ padding: "0 14px 14px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
                         <pre style={S.codePre}>{filled}</pre>
                         <div style={{ display: "flex", gap: 8 }}>
-                          <button style={{ ...S.btn, ...S.btnP, ...S.btnSm }} onClick={() => copyTemplate(i)}>
-                            {copiedIdx === i ? "\u2713 Copied!" : "\u{1F4CB} Copy Prompt"}
+                          <button style={{ ...S.btn, ...S.btnP, ...S.btnSm, display: "flex", alignItems: "center", gap: 5 }} onClick={() => copyTemplate(i)}>
+                            {copiedIdx === i ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy Prompt</>}
                           </button>
-                          <button style={{ ...S.btn, ...S.btnSm, ...S.btnG }} onClick={() => openPrintView(filled)}>
-                            {"\u{1F5A8}\uFE0F"} Print
+                          <button style={{ ...S.btn, ...S.btnSm, ...S.btnG, display: "flex", alignItems: "center", gap: 5 }} onClick={() => openPrintView(filled)}>
+                            <Printer size={13} /> Print
                           </button>
                         </div>
                       </div>
@@ -750,10 +774,10 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             <div style={S.stepPill}>STEP 3</div>
             <h2 style={S.secTitle}>Open Copilot and prompt away!</h2>
             <div style={S.tipsBox}>
-              <p style={S.tipLine}><strong>{"\u{1F517}"} Open Copilot:</strong> Go to <code style={S.codeInline}>copilot.microsoft.com</code> or use the sidebar in Edge</p>
-              <p style={S.tipLine}><strong>{"\u{1F4CB}"} Paste your prompt:</strong> Use Step 1&apos;s custom prompt or a Step 2 template</p>
-              <p style={S.tipLine}><strong>{"\u{1F504}"} Iterate:</strong> Try follow-ups like &ldquo;Make it more practical&rdquo; or &ldquo;Add merit/distinction extension tasks&rdquo;</p>
-              <p style={S.tipLine}><strong>{"\u26A1"} Power moves:</strong> Ask for a mark scheme, student rubric, or self-assessment checklist alongside your assessment</p>
+              <p style={S.tipLine}><strong style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Link size={14} /> Open Copilot:</strong> Go to <code style={S.codeInline}>copilot.microsoft.com</code> or use the sidebar in Edge</p>
+              <p style={S.tipLine}><strong style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Clipboard size={14} /> Paste your prompt:</strong> Use Step 1&apos;s custom prompt or a Step 2 template</p>
+              <p style={S.tipLine}><strong style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><RefreshCw size={14} /> Iterate:</strong> Try follow-ups like &ldquo;Make it more practical&rdquo; or &ldquo;Add merit/distinction extension tasks&rdquo;</p>
+              <p style={S.tipLine}><strong style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Zap size={14} /> Power moves:</strong> Ask for a mark scheme, student rubric, or self-assessment checklist alongside your assessment</p>
             </div>
           </div>
 
@@ -763,20 +787,20 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             <h2 style={S.secTitle}>Review & Reflect</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
               {[
-                { e: "\u2705", t: "What worked well?", d: "Did AI save you time? Suggest ideas you hadn\u2019t thought of?" },
-                { e: "\u26A0\uFE0F", t: "What needed editing?", d: "Language, pitch level, factual accuracy?" },
-                { e: "\u{1F504}", t: "What would you change?", d: "How would you refine your prompt next time?" },
+                { Icon: CheckCircle2, t: "What worked well?", d: "Did AI save you time? Suggest ideas you hadn\u2019t thought of?" },
+                { Icon: AlertTriangle, t: "What needed editing?", d: "Language, pitch level, factual accuracy?" },
+                { Icon: RefreshCw, t: "What would you change?", d: "How would you refine your prompt next time?" },
               ].map((r, i) => (
                 <div key={i} style={S.refCard}>
-                  <span style={{ fontSize: 26 }}>{r.e}</span>
+                  <r.Icon size={26} style={{ color: "#63b3ed", margin: "0 auto 6px" }} />
                   <strong style={{ fontSize: 14 }}>{r.t}</strong>
                   <p style={{ fontSize: 12, color: "#7a8ea0", margin: "4px 0 0" }}>{r.d}</p>
                 </div>
               ))}
             </div>
             <div style={{ textAlign: "center", marginTop: 16 }}>
-              <button style={{ ...S.btn, ...S.btnP }} onClick={() => setView("feedback")}>
-                {"\u{1F4AC}"} Give Session Feedback
+              <button style={{ ...S.btn, ...S.btnP, display: "flex", alignItems: "center", gap: 8, margin: "0 auto" }} onClick={() => setView("feedback")}>
+                <MessageSquare size={15} /> Give Session Feedback
               </button>
             </div>
           </div>
@@ -802,8 +826,8 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         <div style={S.bar}>
-          <button style={S.back} onClick={() => setView("workshop")}>&larr; Back</button>
-          <span style={S.barTitle}>{"\u{1F4AC}"} Session Feedback</span>
+          <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("workshop")}><ChevronLeft size={15} /> Back</button>
+          <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><MessageSquare size={16} /> Session Feedback</span>
           <span style={S.barBadge}>{feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}</span>
         </div>
 
@@ -837,8 +861,8 @@ Provide the complete resource ready for me to use, not just suggestions.`;
           {/* Live results (always visible, updates via polling) */}
           {feedbackData.length > 0 && (
             <div style={S.feedbackResults}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 14px" }}>
-                {"\u{1F4CA}"} Live Results
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 14px", display: "flex", alignItems: "center", gap: 7 }}>
+                <BarChart2 size={16} /> Live Results
                 <span style={{ fontSize: 12, fontWeight: 400, color: "#5e7080", marginLeft: 8 }}>
                   {feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}{avgScore && <> &bull; avg: {avgScore}/5</>}
                 </span>
@@ -1083,7 +1107,23 @@ const S = {
   ethGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 },
   ethCard: { background: "rgba(0,0,0,0.1)", borderRadius: 8, padding: "11px" },
 
-  // Name prompt
+  // Name gate (full-screen entry)
+  nameGate: {
+    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+    minHeight: "100dvh", padding: "40px 20px", textAlign: "center",
+  },
+  nameBox: {
+    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+    padding: "24px 28px", background: "rgba(251,191,36,0.05)",
+    border: "1px solid rgba(251,191,36,0.15)", borderRadius: 14,
+    marginTop: 24, width: "100%", maxWidth: 360,
+  },
+  skipBtn: {
+    background: "none", border: "none", color: "#556", fontSize: 12,
+    marginTop: 32, cursor: "pointer", opacity: 0.6, textDecoration: "underline",
+  },
+
+  // Name prompt (legacy, kept for reference)
   namePrompt: {
     display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
     padding: "16px 20px", background: "rgba(251,191,36,0.05)",
