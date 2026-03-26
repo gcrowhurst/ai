@@ -462,9 +462,15 @@ Provide the complete resource ready for me to use, not just suggestions.`;
           </div>
           {!nameSet ? (
             <div style={S.stack}>
-              <input style={S.heroInput} placeholder="Enter your first name to begin..."
+              <div style={S.namePrompt}>
+                <span style={{ fontSize: 28 }}>{"\u{1F44B}"}</span>
+                <h2 style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>First, tell us your name</h2>
+                <p style={{ fontSize: 13, color: "#5e7080", margin: 0 }}>This is needed so your responses are linked to you.</p>
+              </div>
+              <input style={S.heroInput} placeholder="Your first name..."
                 value={userName} onChange={e => setUserName(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && userName.trim() && setNameSet(true)} />
+                onKeyDown={e => e.key === "Enter" && userName.trim() && setNameSet(true)}
+                autoFocus />
               <button style={{ ...S.btn, ...S.btnP, opacity: userName.trim() ? 1 : 0.4 }}
                 onClick={() => userName.trim() && setNameSet(true)}>Join Session &rarr;</button>
             </div>
@@ -487,6 +493,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
   // ===== ICEBREAKER =====
   if (view === "icebreaker") {
+    if (!nameSet) { setView("welcome"); return null; }
     const getStatus = (qId) => { const e = boardData[qId]; if (!e) return "open"; if (e.answer) return "done"; return "claimed"; };
     const myQ = myClaimedId ? BUSINESS_QUESTIONS.find(q => q.id === myClaimedId) : null;
 
@@ -591,6 +598,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
   // ===== WORKSHOP =====
   if (view === "workshop") {
+    if (!nameSet) { setView("welcome"); return null; }
     const readyForTemplates = lessonInfo.title && lessonInfo.outcomes && lessonInfo.resourceType;
 
     return (
@@ -779,6 +787,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
   // ===== FEEDBACK =====
   if (view === "feedback") {
+    if (!nameSet) { setView("welcome"); return null; }
     const avgScore = feedbackData.length > 0
       ? (feedbackData.reduce((s, f) => s + f.value, 0) / feedbackData.length).toFixed(1)
       : null;
@@ -1073,6 +1082,13 @@ const S = {
   },
   ethGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(165px, 1fr))", gap: 8 },
   ethCard: { background: "rgba(0,0,0,0.1)", borderRadius: 8, padding: "11px" },
+
+  // Name prompt
+  namePrompt: {
+    display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+    padding: "16px 20px", background: "rgba(251,191,36,0.05)",
+    border: "1px solid rgba(251,191,36,0.15)", borderRadius: 12, marginBottom: 4, width: "100%", maxWidth: 320,
+  },
 
   // Feedback
   feedbackWrap: { padding: "24px 16px 60px", maxWidth: 540, margin: "0 auto" },
