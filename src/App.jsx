@@ -17,165 +17,208 @@ function storageClear() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-const BUSINESS_QUESTIONS = [
-  {
-    id: "product",
-    label: "The Product",
-    question: "What does this business sell?",
-    hint: "Be creative — products, services, experiences. The weirder the better.",
-    placeholder: "e.g. Edible furniture for pets, time-travel insurance...",
-    emoji: "\u{1F6CD}\uFE0F",
-  },
-  {
-    id: "customer",
-    label: "Target Customer",
-    question: "Who is the ideal (unlikely) customer?",
-    hint: "Think of the most unexpected demographic.",
-    placeholder: "e.g. Retired astronauts, anxious cats, medieval re-enactors...",
-    emoji: "\u{1F3AF}",
-  },
-  {
-    id: "name",
-    label: "Business Name",
-    question: "What is the business called?",
-    hint: "Make it memorable. Puns welcome.",
-    placeholder: "e.g. Chairish the Moment, Paws & Effect...",
-    emoji: "\u2728",
-  },
-  {
-    id: "slogan",
-    label: "The Slogan",
-    question: "What's the company slogan?",
-    hint: "Channel your inner Mad Men. Keep it punchy.",
-    placeholder: "e.g. 'Because gravity is optional'...",
-    emoji: "\u{1F4E3}",
-  },
-  {
-    id: "origin",
-    label: "Origin Story",
-    question: "How did the founder come up with this idea?",
-    hint: "The stranger the origin story, the better.",
-    placeholder: "e.g. Fell asleep in IKEA and had a vision...",
-    emoji: "\u{1F4A1}",
-  },
-  {
-    id: "disaster",
-    label: "Year One Disaster",
-    question: "What went spectacularly wrong in year one?",
-    hint: "Every great business has a crisis. What was theirs?",
-    placeholder: "e.g. The CEO turned out to be three raccoons in a trenchcoat...",
-    emoji: "\u{1F4A5}",
-  },
-  {
-    id: "pivot",
-    label: "The Pivot",
-    question: "How did they heroically recover?",
-    hint: "Out of disaster comes innovation.",
-    placeholder: "e.g. Partnered with NASA, went underground (literally)...",
-    emoji: "\u{1F680}",
-  },
-  {
-    id: "feature",
-    label: "Killer Feature",
-    question: "What's the one feature that makes this product irresistible?",
-    hint: "The thing competitors can't replicate.",
-    placeholder: "e.g. It glows in the dark, it reads your mood...",
-    emoji: "\u26A1",
-  },
-  {
-    id: "testimonial",
-    label: "Customer Testimonial",
-    question: "Write a fake 5-star customer review.",
-    hint: "Be dramatic. Be emotional. Be ridiculous.",
-    placeholder: "e.g. 'This product saved my marriage AND my souffl\u00E9. 10/10'...",
-    emoji: "\u2B50",
-  },
-  {
-    id: "future",
-    label: "Future Vision",
-    question: "Where is this business in 10 years?",
-    hint: "Dream big. World domination? Space expansion? IPO on Mars?",
-    placeholder: "e.g. Franchises on every continent including Antarctica...",
-    emoji: "\u{1F52E}",
-  }
+const RESOURCE_TYPES = [
+  { id: "interactive", label: "Interactive / Digital", icon: "\u{1F4BB}", desc: "Drag-and-drop, clickable, auto-marked online activity" },
+  { id: "paper", label: "Paper-Based", icon: "\u{1F4C4}", desc: "Printable worksheet, exam paper, or booklet" },
+  { id: "website", label: "Website / Web App", icon: "\u{1F310}", desc: "A single self-contained HTML file I can upload to SharePoint or share directly" },
+  { id: "presentation", label: "Presentation / Slides", icon: "\u{1F4CA}", desc: "PowerPoint / Google Slides with embedded tasks" },
+  { id: "practical", label: "Practical / Hands-On", icon: "\u{1F9EA}", desc: "Observation checklist, lab task, or physical activity" },
+  { id: "video", label: "Video-Based", icon: "\u{1F3AC}", desc: "Video scenario with questions or a student-produced video task" },
 ];
 
-const PROMPT_TEMPLATES = [
-  {
-    title: "Quick Quiz Generator",
-    icon: "\u{1F4DD}",
-    template: `I teach [SUBJECT] to [LEVEL] students. My lesson is about "[LESSON TITLE]".
-
-The learning outcomes are:
-- [OUTCOME 1]
-- [OUTCOME 2]
-- [OUTCOME 3]
-
-Please create a 10-question interactive quiz that:
-- Mixes question types (multiple choice, true/false, short answer)
-- Progresses from recall to application
-- Includes feedback for wrong answers explaining WHY
-- Aligns each question to a specific learning outcome
-
-Format it clearly so I could transfer it to our VLE.`
-  },
-  {
-    title: "Scenario-Based Assessment",
-    icon: "\u{1F3AD}",
-    template: `I need a scenario-based assessment for my [SUBJECT] lesson on "[TOPIC]".
-
-Students are [LEVEL] and should demonstrate they can:
-- [OUTCOME 1]
-- [OUTCOME 2]
-
-Create a realistic workplace/real-world scenario where students must:
-1. Identify the problem
-2. Apply their knowledge to solve it
-3. Justify their decisions
-
-Include a marking rubric with clear criteria at Pass, Merit, and Distinction levels.`
-  },
-  {
-    title: "Differentiated Assessment Pack",
-    icon: "\u{1F39A}\uFE0F",
-    template: `I teach a mixed-ability [SUBJECT] class. The topic is "[TOPIC]".
-
-Learning outcomes: [LIST OUTCOMES]
-
-Please create THREE versions of an assessment:
-1. FOUNDATION: Scaffolded questions with prompts and word banks
-2. INTERMEDIATE: Open questions requiring explanation
-3. ADVANCED: Extended response with analysis/evaluation
-
-All three must assess the SAME outcomes but at different cognitive demands. Include an answer guide.`
-  },
-  {
-    title: "Practical Skills Checklist",
-    icon: "\u{1F527}",
-    template: `I need an observation checklist for a practical assessment in [SUBJECT].
-
-The task is: [DESCRIBE PRACTICAL TASK]
-
-Students should demonstrate:
-- [SKILL 1]
-- [SKILL 2]
-- [SKILL 3]
-
-Create a checklist that:
-- Breaks each skill into observable steps
-- Includes columns for "Not yet / Developing / Competent / Excellent"
-- Has space for assessor notes
-- Includes health & safety criteria where relevant`
-  }
+const BUSINESS_QUESTIONS = [
+  { id: "product", label: "The Product", question: "What does this business sell?", hint: "Be creative \u2014 products, services, experiences. The weirder the better.", placeholder: "e.g. Edible furniture for pets, time-travel insurance...", emoji: "\u{1F6CD}\uFE0F" },
+  { id: "customer", label: "Target Customer", question: "Who is the ideal (unlikely) customer?", hint: "Think of the most unexpected demographic.", placeholder: "e.g. Retired astronauts, anxious cats, medieval re-enactors...", emoji: "\u{1F3AF}" },
+  { id: "name", label: "Business Name", question: "What is the business called?", hint: "Make it memorable. Puns welcome.", placeholder: "e.g. Chairish the Moment, Paws & Effect...", emoji: "\u2728" },
+  { id: "slogan", label: "The Slogan", question: "What\u2019s the company slogan?", hint: "Channel your inner Mad Men. Keep it punchy.", placeholder: "e.g. \u2018Because gravity is optional\u2019...", emoji: "\u{1F4E3}" },
+  { id: "origin", label: "Origin Story", question: "How did the founder come up with this idea?", hint: "The stranger the origin story, the better.", placeholder: "e.g. Fell asleep in IKEA and had a vision...", emoji: "\u{1F4A1}" },
+  { id: "disaster", label: "Year One Disaster", question: "What went spectacularly wrong in year one?", hint: "Every great business has a crisis. What was theirs?", placeholder: "e.g. The CEO turned out to be three raccoons in a trenchcoat...", emoji: "\u{1F4A5}" },
+  { id: "pivot", label: "The Pivot", question: "How did they heroically recover?", hint: "Out of disaster comes innovation.", placeholder: "e.g. Partnered with NASA, went underground (literally)...", emoji: "\u{1F680}" },
+  { id: "feature", label: "Killer Feature", question: "What\u2019s the one feature that makes this product irresistible?", hint: "The thing competitors can\u2019t replicate.", placeholder: "e.g. It glows in the dark, it reads your mood...", emoji: "\u26A1" },
+  { id: "testimonial", label: "Customer Testimonial", question: "Write a fake 5-star customer review.", hint: "Be dramatic. Be emotional. Be ridiculous.", placeholder: "e.g. \u2018This product saved my marriage AND my souffl\u00E9. 10/10\u2019...", emoji: "\u2B50" },
+  { id: "future", label: "Future Vision", question: "Where is this business in 10 years?", hint: "Dream big. World domination? Space expansion? IPO on Mars?", placeholder: "e.g. Franchises on every continent including Antarctica...", emoji: "\u{1F52E}" },
 ];
 
 const ETHICS_POINTS = [
   { icon: "\u{1F441}\uFE0F", title: "Always Review", desc: "AI output is a first draft, never a final product. Check for accuracy, bias, and relevance to YOUR students." },
   { icon: "\u2696\uFE0F", title: "Bias Awareness", desc: "AI can reflect societal biases. Review for inclusive language, diverse examples, and cultural sensitivity." },
   { icon: "\u{1F512}", title: "Data Privacy", desc: "Never paste student names, data, or sensitive info into AI tools. Keep prompts anonymous." },
-  { icon: "\u{1F3AF}", title: "Pedagogical Judgement", desc: "You know your students. AI doesn't. Always adapt outputs to your class context and individual needs." },
+  { icon: "\u{1F3AF}", title: "Pedagogical Judgement", desc: "You know your students. AI doesn\u2019t. Always adapt outputs to your class context and individual needs." },
   { icon: "\u{1F4D0}", title: "Quality Assurance", desc: "Cross-check AI-generated answers and marking criteria against your subject expertise and awarding body standards." },
-  { icon: "\u{1F4A1}", title: "Transparency", desc: "Be open with colleagues about AI use. Share what works. Build a culture of ethical experimentation." }
+  { icon: "\u{1F4A1}", title: "Transparency", desc: "Be open with colleagues about AI use. Share what works. Build a culture of ethical experimentation." },
+];
+
+// ============ PROMPT TEMPLATE BUILDER ============
+// Each template is a function that takes lessonInfo and returns the fully-filled prompt string.
+// This ensures ALL user inputs are injected, not just title/outcomes.
+
+function formatOutcomes(raw) {
+  if (!raw) return "- [Add your learning outcomes]";
+  return raw.split("\n").filter(Boolean).map(o => `- ${o.trim()}`).join("\n");
+}
+
+function resourceDesc(type) {
+  const r = RESOURCE_TYPES.find(t => t.id === type);
+  return r ? r.label : "a resource";
+}
+
+function resourceFormatInstructions(type) {
+  switch (type) {
+    case "interactive": return `FORMAT & DELIVERY:
+- This must be a fully interactive digital activity (e.g. for use in a browser, LMS/VLE, or tool like Nearpod/Kahoot/Google Forms).
+- Include drag-and-drop, click-to-reveal, or auto-scored question types where possible.
+- Provide the content in a format I can directly paste into a digital tool, OR provide complete HTML/CSS/JS code I can host as a standalone page.
+- Include clear instructions for the student at the top.`;
+    case "paper": return `FORMAT & DELIVERY:
+- This must be a clean, print-ready document.
+- Use clear headings, numbered questions, and adequate white space for student answers.
+- Include a header with: Assessment Title, Student Name, Date, and Total Marks.
+- Include a footer with page numbers.
+- Provide the output in a format ready to paste into Word or Google Docs for printing.`;
+    case "website": return `FORMAT & DELIVERY:
+- Produce this as a SINGLE, SELF-CONTAINED HTML file. Everything (CSS, JavaScript, images as data URIs) must be embedded in one .html file with NO external dependencies, CDN links, or separate files.
+- I need to be able to save this as one .html file, upload it to SharePoint, and have it work immediately when opened in a browser.
+- The page should be visually polished, mobile-responsive, and professional.
+- Include interactive elements where appropriate (expandable sections, buttons, hover effects, auto-marking).
+- Include a clear title, student instructions, and navigation.
+- Do NOT use any framework or library that requires a build step. Use only vanilla HTML, CSS, and JavaScript.`;
+    case "presentation": return `FORMAT & DELIVERY:
+- Structure this as a slide-by-slide outline I can build in PowerPoint or Google Slides.
+- Each slide should have: a title, the task/question, and presenter notes with expected answers.
+- Include a title slide, instruction slide, one slide per question/task, and a summary/reflection slide.
+- Suggest images or visual layouts for key slides.`;
+    case "practical": return `FORMAT & DELIVERY:
+- Create a practical observation checklist and task brief.
+- The task brief should include: aim, equipment/materials needed, step-by-step instructions, safety notes.
+- The observation checklist should have: skill/criteria rows, columns for "Not Yet / Developing / Competent / Excellent", and an assessor notes column.
+- Format everything as a printable table.`;
+    case "video": return `FORMAT & DELIVERY:
+- Design this as a video-based assessment task.
+- Option A: Provide a scenario script/storyboard for a video I\u2019ll show students, with comprehension/analysis questions.
+- Option B: Provide a student video production brief with clear success criteria.
+- Include timing guidance and any required resources.`;
+    default: return "";
+  }
+}
+
+const PROMPT_TEMPLATES = [
+  {
+    title: "Quick Quiz Generator",
+    icon: "\u{1F4DD}",
+    build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
+
+LEARNING OUTCOMES students must demonstrate:
+${formatOutcomes(info.outcomes)}
+
+${info.methods ? `I currently assess this using: ${info.methods}` : ""}
+${info.frustrations ? `My frustration with current assessment: ${info.frustrations}` : ""}
+
+TASK: Create a 10-question quiz delivered as ${resourceDesc(info.resourceType)}.
+
+REQUIREMENTS:
+- Mix question types: multiple choice, true/false, short answer, and one extended response
+- Progress from simple recall \u2192 understanding \u2192 application \u2192 analysis
+- Each question MUST map to a specific learning outcome (state which one)
+- Include detailed feedback for EVERY wrong answer option explaining WHY it\u2019s wrong
+- Include a complete answer key with mark allocation
+- Total: 30 marks
+
+${resourceFormatInstructions(info.resourceType)}
+
+Also provide a separate MARKING GUIDE with acceptable alternative answers.`
+  },
+  {
+    title: "Scenario-Based Assessment",
+    icon: "\u{1F3AD}",
+    build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
+
+LEARNING OUTCOMES students must demonstrate:
+${formatOutcomes(info.outcomes)}
+
+${info.methods ? `Current assessment method: ${info.methods}` : ""}
+${info.frustrations ? `What I want to improve: ${info.frustrations}` : ""}
+
+TASK: Create a scenario-based assessment delivered as ${resourceDesc(info.resourceType)}.
+
+REQUIREMENTS:
+- Write a realistic, engaging real-world or workplace scenario (at least 150 words)
+- Students must: (1) Identify the key problem/issue, (2) Apply their knowledge to propose a solution, (3) Justify their decisions with reasoning linked to the learning outcomes
+- Include 4\u20136 structured questions that progress through Bloom\u2019s taxonomy
+- Provide a full MARKING RUBRIC with criteria at:
+  \u2022 Pass: Basic identification and description
+  \u2022 Merit: Clear application with some analysis
+  \u2022 Distinction: Detailed evaluation with justified conclusions
+- Include model answers at each grade boundary
+
+${resourceFormatInstructions(info.resourceType)}`
+  },
+  {
+    title: "Differentiated Assessment Pack",
+    icon: "\u{1F39A}\uFE0F",
+    build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
+
+LEARNING OUTCOMES (all three versions must assess THESE SAME outcomes):
+${formatOutcomes(info.outcomes)}
+
+${info.methods ? `Current assessment method: ${info.methods}` : ""}
+${info.frustrations ? `What I want to improve: ${info.frustrations}` : ""}
+
+TASK: Create THREE differentiated versions of an assessment, all delivered as ${resourceDesc(info.resourceType)}.
+
+VERSION 1 \u2014 FOUNDATION (lower ability / additional support):
+- Scaffolded questions with sentence starters, word banks, and visual prompts
+- Fill-in-the-gap and matching exercises
+- Simplified language, shorter responses expected
+
+VERSION 2 \u2014 INTERMEDIATE (middle ability):
+- Open-ended questions requiring explanation in own words
+- Some application and comparison tasks
+- No scaffolding but clear question structure
+
+VERSION 3 \u2014 ADVANCED (higher ability / stretch & challenge):
+- Extended response questions requiring analysis, evaluation, and synthesis
+- Require students to make and defend judgements
+- Include an unseen element or unfamiliar context
+
+ALL VERSIONS MUST:
+- Assess the same learning outcomes (state which outcome each question targets)
+- Include a complete answer guide with mark scheme
+- Be clearly labelled so I can distribute the right version to each student
+
+${resourceFormatInstructions(info.resourceType)}`
+  },
+  {
+    title: "Practical Skills Checklist",
+    icon: "\u{1F527}",
+    build: (info) => `I teach a lesson called "${info.title || "[LESSON TITLE]"}".
+
+LEARNING OUTCOMES / SKILLS students must demonstrate:
+${formatOutcomes(info.outcomes)}
+
+${info.methods ? `Current assessment method: ${info.methods}` : ""}
+${info.frustrations ? `What I want to improve: ${info.frustrations}` : ""}
+
+TASK: Create a practical skills observation checklist and task brief, delivered as ${resourceDesc(info.resourceType)}.
+
+THE TASK BRIEF should include:
+- Clear aim / learning objective
+- Equipment and materials list
+- Step-by-step procedure (numbered)
+- Health & safety requirements
+- Time allocation
+- Expected outcome / what a successful result looks like
+
+THE OBSERVATION CHECKLIST should include:
+- Each skill broken into specific, observable sub-steps
+- Assessment columns: "Not Yet | Developing | Competent | Excellent"
+- Space for assessor written notes per skill
+- A final holistic grade row
+- Health & safety compliance row
+
+${resourceFormatInstructions(info.resourceType)}
+
+Also include a STUDENT SELF-ASSESSMENT version of the checklist they can complete before/after the task.`
+  },
 ];
 
 function App() {
@@ -194,64 +237,47 @@ function App() {
 
   // Workshop
   const [copiedIdx, setCopiedIdx] = useState(null);
-  const [lessonInfo, setLessonInfo] = useState({ title: "", outcomes: "", methods: "", frustrations: "" });
+  const [lessonInfo, setLessonInfo] = useState({
+    title: "", outcomes: "", methods: "", frustrations: "", resourceType: "",
+  });
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [activeTemplate, setActiveTemplate] = useState(null);
   const [showEthics, setShowEthics] = useState(false);
+  const [showPrint, setShowPrint] = useState(false);
+  const [printContent, setPrintContent] = useState("");
 
   // Storage
-  const loadBoard = () => {
-    const data = storageGet();
-    setBoardData(data);
-  };
-
-  const saveBoard = (newData) => {
-    storageSet(newData);
-    setBoardData(newData);
-  };
+  const loadBoard = () => { setBoardData(storageGet()); };
+  const saveBoard = (d) => { storageSet(d); setBoardData(d); };
 
   const claimQuestion = (qId) => {
     if (myClaimedId || mySubmitted) return;
-    let current = { ...boardData };
-    if (current[qId]) return;
-    current[qId] = { name: userName, answer: null, time: Date.now() };
+    let c = { ...boardData };
+    if (c[qId]) return;
+    c[qId] = { name: userName, answer: null, time: Date.now() };
     setMyClaimedId(qId);
-    saveBoard(current);
+    saveBoard(c);
   };
 
   const submitAnswer = () => {
     if (!answerInput.trim() || !myClaimedId) return;
-    let current = { ...boardData };
-    current[myClaimedId] = { ...current[myClaimedId], answer: answerInput.trim(), time: Date.now() };
-    saveBoard(current);
+    let c = { ...boardData };
+    c[myClaimedId] = { ...c[myClaimedId], answer: answerInput.trim(), time: Date.now() };
+    saveBoard(c);
     setMySubmitted(true);
     setAnswerInput("");
   };
 
-  const resetBoard = () => {
-    storageClear();
-    setBoardData({});
-    setMyClaimedId(null);
-    setMySubmitted(false);
-  };
+  const resetBoard = () => { storageClear(); setBoardData({}); setMyClaimedId(null); setMySubmitted(false); };
 
-  // Polling
   useEffect(() => {
-    if (view === "icebreaker") {
-      loadBoard();
-      pollRef.current = setInterval(loadBoard, 3000);
-      return () => clearInterval(pollRef.current);
-    }
+    if (view === "icebreaker") { loadBoard(); pollRef.current = setInterval(loadBoard, 3000); return () => clearInterval(pollRef.current); }
   }, [view]);
 
-  // Restore claim on re-entry
   useEffect(() => {
     if (view === "icebreaker" && userName && Object.keys(boardData).length > 0) {
       const myEntry = Object.entries(boardData).find(([_, v]) => v.name === userName);
-      if (myEntry) {
-        setMyClaimedId(myEntry[0]);
-        if (myEntry[1].answer) setMySubmitted(true);
-      }
+      if (myEntry) { setMyClaimedId(myEntry[0]); if (myEntry[1].answer) setMySubmitted(true); }
     }
   }, [view, boardData, userName]);
 
@@ -268,49 +294,93 @@ function App() {
     return `Using the following collaboratively-created fictional business details, build a fun, professional-looking single-page website. Include all the details below. Make it visually striking and entertaining:\n\n${lines}\n\nCreate a real startup landing page with sections for the product, about us / origin story, features, testimonials, and a call to action. Keep the tone playful and fun.`;
   };
 
-  const copyBrief = () => {
-    navigator.clipboard.writeText(buildBrief());
-    setBriefCopied(true);
-    setTimeout(() => setBriefCopied(false), 3000);
-  };
+  const copyBrief = () => { navigator.clipboard.writeText(buildBrief()); setBriefCopied(true); setTimeout(() => setBriefCopied(false), 3000); };
 
-  // Workshop helpers
-  const copyTemplate = (idx, template) => {
-    let filled = template;
-    if (lessonInfo.title) filled = filled.replace(/\[LESSON TITLE\]|\[TOPIC\]/g, lessonInfo.title);
-    if (lessonInfo.outcomes) {
-      const outcomes = lessonInfo.outcomes.split("\n").filter(Boolean);
-      outcomes.forEach((o, i) => { filled = filled.replace(`[OUTCOME ${i + 1}]`, o.trim()); });
-      filled = filled.replace(/\[LIST OUTCOMES\]/g, outcomes.join(", "));
-    }
-    navigator.clipboard.writeText(filled);
+  // Build and copy a template prompt with ALL user info prefilled
+  const copyTemplate = (idx) => {
+    const prompt = PROMPT_TEMPLATES[idx].build(lessonInfo);
+    navigator.clipboard.writeText(prompt);
     setCopiedIdx(idx);
     setTimeout(() => setCopiedIdx(null), 2000);
   };
 
+  // Build custom prompt (Step 1)
   const buildCustomPrompt = () => {
     if (!lessonInfo.title) return;
+    const rt = lessonInfo.resourceType ? resourceDesc(lessonInfo.resourceType) : "any suitable format";
     const prompt = `I teach a lesson called "${lessonInfo.title}".
 
-The learning outcomes are:
-${lessonInfo.outcomes || "[Add your outcomes]"}
+LEARNING OUTCOMES students must demonstrate:
+${formatOutcomes(lessonInfo.outcomes)}
 
-I currently assess this using: ${lessonInfo.methods || "[Your current methods]"}
+${lessonInfo.methods ? `I currently assess this using: ${lessonInfo.methods}` : ""}
+${lessonInfo.frustrations ? `My main frustration with current assessment: ${lessonInfo.frustrations}` : ""}
 
-${lessonInfo.frustrations ? `My main frustration with current assessment is: ${lessonInfo.frustrations}` : ""}
+DESIRED RESOURCE TYPE: ${rt}
 
-Please help me design a more engaging, interactive assessment that:
-- Aligns directly to the learning outcomes above
-- Is practical and achievable within a classroom setting
-- Includes clear success criteria or a marking guide
-- Engages students more than my current approach
+Please design a complete, ready-to-use assessment resource that:
+- Aligns EVERY question/task directly to one or more of the learning outcomes above
+- Is practical and achievable within a single classroom session
+- Includes clear success criteria or a detailed marking guide with mark allocations
+- Engages students more than a standard written test
+- Includes model answers or expected responses
 
-Suggest the format, questions/tasks, and how to mark it.`;
+${lessonInfo.resourceType ? resourceFormatInstructions(lessonInfo.resourceType) : ""}
+
+Provide the complete resource ready for me to use, not just suggestions.`;
     setGeneratedPrompt(prompt);
     navigator.clipboard.writeText(prompt);
   };
 
-  // WELCOME
+  // Print view
+  const openPrintView = (content) => {
+    setPrintContent(content);
+    setShowPrint(true);
+  };
+
+  const handlePrint = () => { window.print(); };
+
+  // ===== PRINT VIEW =====
+  if (showPrint) {
+    return (
+      <div>
+        <style>{`
+          @media screen {
+            .print-toolbar { display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+              background: #111; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 10; }
+            .print-body { max-width: 800px; margin: 0 auto; padding: 30px 24px; background: #fff; color: #222;
+              font-family: Georgia, 'Times New Roman', serif; font-size: 14px; line-height: 1.8; min-height: 100vh; }
+          }
+          @media print {
+            .print-toolbar { display: none !important; }
+            .print-body { padding: 0; margin: 0; max-width: 100%; }
+            body { background: #fff !important; }
+          }
+        `}</style>
+        <div className="print-toolbar">
+          <button style={{ ...S.btn, ...S.btnG }} onClick={() => setShowPrint(false)}>&larr; Back to Workshop</button>
+          <button style={{ ...S.btn, ...S.btnP }} onClick={handlePrint}>{"\u{1F5A8}\uFE0F"} Print / Save as PDF</button>
+          <span style={{ fontSize: 12, color: "#888", marginLeft: "auto" }}>Tip: Use &ldquo;Save as PDF&rdquo; in the print dialog for a digital copy</span>
+        </div>
+        <div className="print-body">
+          <h1 style={{ fontSize: 22, marginBottom: 4, borderBottom: "2px solid #222", paddingBottom: 8 }}>Assessment Resource</h1>
+          <p style={{ fontSize: 12, color: "#666", marginBottom: 20 }}>
+            Lesson: <strong>{lessonInfo.title || "Untitled"}</strong>
+            {lessonInfo.resourceType && <> &bull; Format: <strong>{resourceDesc(lessonInfo.resourceType)}</strong></>}
+          </p>
+          <hr style={{ border: "none", borderTop: "1px solid #ddd", margin: "0 0 20px" }} />
+          <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", fontFamily: "inherit", fontSize: 13, lineHeight: 1.7 }}>
+            {printContent}
+          </pre>
+          <div style={{ marginTop: 40, paddingTop: 16, borderTop: "1px solid #ddd", fontSize: 11, color: "#999" }}>
+            Generated with AI-Powered Assessment Design Workshop &bull; Always review AI output before use with students
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== WELCOME =====
   if (view === "welcome") {
     return (
       <div style={S.page}>
@@ -318,7 +388,6 @@ Suggest the format, questions/tasks, and how to mark it.`;
           <div style={S.chipBadge}>CPD SESSION</div>
           <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
           <p style={S.heroSub}>A 50-minute interactive workshop</p>
-
           <div style={S.agenda}>
             {[
               { t: "12 min", i: "\u{1F3B2}", l: "The Worst Best Business", d: "Claim a question, build a ridiculous startup together" },
@@ -334,7 +403,6 @@ Suggest the format, questions/tasks, and how to mark it.`;
               </div>
             ))}
           </div>
-
           {!nameSet ? (
             <div style={S.stack}>
               <input style={S.heroInput} placeholder="Enter your first name to begin..."
@@ -350,7 +418,7 @@ Suggest the format, questions/tasks, and how to mark it.`;
               <button style={{ ...S.btn, ...S.btnG }} onClick={() => setView("workshop")}>{"\u{1F6E0}\uFE0F"} Jump to Workshop</button>
               <label style={S.tog}>
                 <input type="checkbox" checked={facilitatorMode} onChange={e => setFacilitatorMode(e.target.checked)} />
-                <span style={{ fontSize: 13, color: "#556" }}>I'm the facilitator</span>
+                <span style={{ fontSize: 13, color: "#556" }}>I&apos;m the facilitator</span>
               </label>
             </div>
           )}
@@ -359,15 +427,9 @@ Suggest the format, questions/tasks, and how to mark it.`;
     );
   }
 
-  // ICEBREAKER
+  // ===== ICEBREAKER =====
   if (view === "icebreaker") {
-    const getStatus = (qId) => {
-      const e = boardData[qId];
-      if (!e) return "open";
-      if (e.answer) return "done";
-      return "claimed";
-    };
-
+    const getStatus = (qId) => { const e = boardData[qId]; if (!e) return "open"; if (e.answer) return "done"; return "claimed"; };
     const myQ = myClaimedId ? BUSINESS_QUESTIONS.find(q => q.id === myClaimedId) : null;
 
     return (
@@ -392,7 +454,7 @@ Suggest the format, questions/tasks, and how to mark it.`;
             <div style={S.instr}>
               <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#8aa" }}>
                 <strong>Pick one question</strong> from the board below &mdash; each shapes a different part of our fictional business.
-                Once you claim it, write your answer. Together you'll build the most ridiculous startup ever.
+                Once you claim it, write your answer. Together you&apos;ll build the most ridiculous startup ever.
               </p>
             </div>
           )}
@@ -403,54 +465,22 @@ Suggest the format, questions/tasks, and how to mark it.`;
               const entry = boardData[q.id];
               const isMine = entry?.name === userName;
               const canClaim = status === "open" && !myClaimedId && !mySubmitted;
-
               return (
-                <div
-                  key={q.id}
-                  onClick={() => canClaim && claimQuestion(q.id)}
-                  style={{
-                    ...S.card,
-                    ...(status === "done" ? S.cardDone : {}),
-                    ...(status === "claimed" ? S.cardClaimed : {}),
-                    ...(isMine && !mySubmitted ? S.cardMine : {}),
-                    cursor: canClaim ? "pointer" : "default",
-                    transform: canClaim ? undefined : "none",
-                  }}
+                <div key={q.id} onClick={() => canClaim && claimQuestion(q.id)}
+                  style={{ ...S.card, ...(status === "done" ? S.cardDone : {}), ...(status === "claimed" ? S.cardClaimed : {}), ...(isMine && !mySubmitted ? S.cardMine : {}), cursor: canClaim ? "pointer" : "default" }}
                   onMouseEnter={e => { if (canClaim) e.currentTarget.style.borderColor = "rgba(99,179,237,0.4)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = status === "done" ? "rgba(74,222,128,0.15)" : status === "claimed" ? "rgba(251,191,36,0.15)" : "rgba(255,255,255,0.07)"; }}
-                >
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = status === "done" ? "rgba(74,222,128,0.15)" : status === "claimed" ? "rgba(251,191,36,0.15)" : "rgba(255,255,255,0.07)"; }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                     <span style={{ fontSize: 24 }}>{q.emoji}</span>
-                    <span style={{
-                      width: 9, height: 9, borderRadius: "50%",
+                    <span style={{ width: 9, height: 9, borderRadius: "50%",
                       background: status === "done" ? "#4ade80" : status === "claimed" ? "#fbbf24" : "rgba(255,255,255,0.12)",
-                      boxShadow: status === "done" ? "0 0 6px rgba(74,222,128,0.4)" : status === "claimed" ? "0 0 6px rgba(251,191,36,0.3)" : "none",
-                    }} />
+                      boxShadow: status === "done" ? "0 0 6px rgba(74,222,128,0.4)" : status === "claimed" ? "0 0 6px rgba(251,191,36,0.3)" : "none" }} />
                   </div>
-
                   <strong style={{ fontSize: 13, color: "#c0cdd8", display: "block", marginBottom: 4 }}>{q.label}</strong>
-
-                  {status === "done" && entry && (
-                    <>
-                      <p style={{ fontSize: 12, fontStyle: "italic", color: "#7a9aaa", margin: "2px 0 4px", lineHeight: 1.4 }}>
-                        &ldquo;{entry.answer}&rdquo;
-                      </p>
-                      <span style={{ fontSize: 11, color: "#4ade80", fontWeight: 600 }}>&mdash; {entry.name}</span>
-                    </>
-                  )}
-
-                  {status === "claimed" && !entry?.answer && (
-                    <p style={{ fontSize: 12, color: "#fbbf24", margin: "4px 0 0" }}>
-                      {isMine ? "\u270F\uFE0F You claimed this!" : `\u23F3 ${entry?.name} is writing...`}
-                    </p>
-                  )}
-
-                  {status === "open" && canClaim && (
-                    <p style={{ fontSize: 11, color: "#4a6070", margin: "auto 0 0", paddingTop: 4 }}>Click to claim</p>
-                  )}
-                  {status === "open" && !canClaim && (
-                    <p style={{ fontSize: 11, color: "#334050", margin: "auto 0 0", fontStyle: "italic", paddingTop: 4 }}>Available</p>
-                  )}
+                  {status === "done" && entry && (<><p style={{ fontSize: 12, fontStyle: "italic", color: "#7a9aaa", margin: "2px 0 4px", lineHeight: 1.4 }}>&ldquo;{entry.answer}&rdquo;</p><span style={{ fontSize: 11, color: "#4ade80", fontWeight: 600 }}>&mdash; {entry.name}</span></>)}
+                  {status === "claimed" && !entry?.answer && (<p style={{ fontSize: 12, color: "#fbbf24", margin: "4px 0 0" }}>{isMine ? "\u270F\uFE0F You claimed this!" : `\u23F3 ${entry?.name} is writing...`}</p>)}
+                  {status === "open" && canClaim && (<p style={{ fontSize: 11, color: "#4a6070", margin: "auto 0 0", paddingTop: 4 }}>Click to claim</p>)}
+                  {status === "open" && !canClaim && (<p style={{ fontSize: 11, color: "#334050", margin: "auto 0 0", fontStyle: "italic", paddingTop: 4 }}>Available</p>)}
                 </div>
               );
             })}
@@ -465,20 +495,11 @@ Suggest the format, questions/tasks, and how to mark it.`;
                   <p style={{ fontSize: 13, color: "#7a8ea0", margin: "4px 0 0" }}>{myQ.hint}</p>
                 </div>
               </div>
-              <textarea
-                style={S.answerTA}
-                placeholder={myQ.placeholder}
-                value={answerInput}
-                onChange={e => setAnswerInput(e.target.value)}
-                rows={3}
-                maxLength={200}
-                autoFocus
-              />
+              <textarea style={S.answerTA} placeholder={myQ.placeholder} value={answerInput}
+                onChange={e => setAnswerInput(e.target.value)} rows={3} maxLength={200} autoFocus />
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 12, color: "#445566" }}>{answerInput.length}/200</span>
-                <button style={{ ...S.btn, ...S.btnP, opacity: answerInput.trim() ? 1 : 0.4 }} onClick={submitAnswer}>
-                  Submit Answer &check;
-                </button>
+                <button style={{ ...S.btn, ...S.btnP, opacity: answerInput.trim() ? 1 : 0.4 }} onClick={submitAnswer}>Submit Answer &check;</button>
               </div>
             </div>
           )}
@@ -486,34 +507,23 @@ Suggest the format, questions/tasks, and how to mark it.`;
           {mySubmitted && !allComplete && (
             <div style={S.doneBox}>
               <span style={{ fontSize: 26 }}>{"\u2705"}</span>
-              <p style={{ margin: 0, fontSize: 15 }}><strong>You're in!</strong> Your answer is on the board. Watch the others fill in the gaps...</p>
+              <p style={{ margin: 0, fontSize: 15 }}><strong>You&apos;re in!</strong> Your answer is on the board. Watch the others fill in the gaps...</p>
             </div>
           )}
 
           {allComplete && (
             <div style={{ textAlign: "center", marginTop: 12 }}>
               <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 6px" }}>{"\u{1F3C1}"} The business is complete!</h2>
-              <p style={{ color: "#7a8ea0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>
-                Every question answered. Copy the brief below and paste it into Claude to generate a website live.
-              </p>
-
-              <div style={S.briefBox}>
-                <pre style={S.briefPre}>{buildBrief()}</pre>
-              </div>
-
+              <p style={{ color: "#7a8ea0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>Every question answered. Copy the brief below and paste it into Claude to generate a website live.</p>
+              <div style={S.briefBox}><pre style={S.briefPre}>{buildBrief()}</pre></div>
               <button style={{ ...S.btn, ...S.btnP, ...S.btnLg, marginTop: 4 }} onClick={copyBrief}>
                 {briefCopied ? "\u2713 Copied to clipboard!" : "\u{1F4CB} Copy Brief to Clipboard"}
               </button>
-
               <div style={S.briefNote}>
                 <strong>{"\u{1F4A1}"} What just happened:</strong> Each of you contributed one piece of creative input. Now AI will synthesise it
-                into a structured website &mdash; messy human creativity &rarr; polished output. That's exactly the skill you'll use next
-                to design assessments with Copilot.
+                into a structured website &mdash; messy human creativity &rarr; polished output. That&apos;s exactly the skill you&apos;ll use next to design assessments with Copilot.
               </div>
-
-              <button style={{ ...S.btn, ...S.btnG, marginTop: 14 }} onClick={() => setView("workshop")}>
-                Continue to Workshop &rarr;
-              </button>
+              <button style={{ ...S.btn, ...S.btnG, marginTop: 14 }} onClick={() => setView("workshop")}>Continue to Workshop &rarr;</button>
             </div>
           )}
         </div>
@@ -521,8 +531,10 @@ Suggest the format, questions/tasks, and how to mark it.`;
     );
   }
 
-  // WORKSHOP
+  // ===== WORKSHOP =====
   if (view === "workshop") {
+    const readyForTemplates = lessonInfo.title && lessonInfo.outcomes && lessonInfo.resourceType;
+
     return (
       <div style={S.page}>
         <div style={S.bar}>
@@ -553,19 +565,39 @@ Suggest the format, questions/tasks, and how to mark it.`;
           <div style={S.sec}>
             <div style={S.stepPill}>STEP 1</div>
             <h2 style={S.secTitle}>Tell us about your lesson</h2>
-            <p style={S.secDesc}>This info auto-fills into the prompt templates below.</p>
+            <p style={S.secDesc}>This info auto-fills into every prompt in Step 2.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={S.fld}>
-                <label style={S.lbl}>Lesson / Topic Title</label>
+                <label style={S.lbl}>Lesson / Topic Title *</label>
                 <input style={S.inp} placeholder="e.g. Introduction to Electrical Circuits"
                   value={lessonInfo.title} onChange={e => setLessonInfo(p => ({ ...p, title: e.target.value }))} />
               </div>
               <div style={S.fld}>
-                <label style={S.lbl}>Learning Outcomes (one per line)</label>
+                <label style={S.lbl}>Learning Outcomes (one per line) *</label>
                 <textarea style={S.txa} rows={4}
-                  placeholder={"e.g.\nIdentify series and parallel circuits\nCalculate resistance using Ohm's law"}
+                  placeholder={"e.g.\nIdentify series and parallel circuits\nCalculate resistance using Ohm\u2019s law"}
                   value={lessonInfo.outcomes} onChange={e => setLessonInfo(p => ({ ...p, outcomes: e.target.value }))} />
               </div>
+
+              {/* RESOURCE TYPE PICKER */}
+              <div style={S.fld}>
+                <label style={S.lbl}>What type of resource do you want? *</label>
+                <div style={S.rtGrid}>
+                  {RESOURCE_TYPES.map(rt => {
+                    const active = lessonInfo.resourceType === rt.id;
+                    return (
+                      <div key={rt.id}
+                        onClick={() => setLessonInfo(p => ({ ...p, resourceType: rt.id }))}
+                        style={{ ...S.rtCard, ...(active ? S.rtCardActive : {}) }}>
+                        <span style={{ fontSize: 22 }}>{rt.icon}</span>
+                        <strong style={{ fontSize: 12, color: active ? "#63b3ed" : "#c0cdd8" }}>{rt.label}</strong>
+                        <p style={{ fontSize: 10, color: "#5e7080", margin: "2px 0 0", lineHeight: 1.4 }}>{rt.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
               <div style={S.fld}>
                 <label style={S.lbl}>Current Assessment Method</label>
                 <input style={S.inp} placeholder="e.g. End-of-unit written test"
@@ -577,12 +609,31 @@ Suggest the format, questions/tasks, and how to mark it.`;
                   value={lessonInfo.frustrations} onChange={e => setLessonInfo(p => ({ ...p, frustrations: e.target.value }))} />
               </div>
             </div>
-            <button style={{ ...S.btn, ...S.btnP, marginTop: 14, opacity: lessonInfo.title ? 1 : 0.4 }} onClick={buildCustomPrompt}>
+
+            {/* Summary of what Step 1 captured */}
+            {lessonInfo.title && (
+              <div style={S.summaryBox}>
+                <strong style={{ fontSize: 12, color: "#63b3ed" }}>{"\u2139\uFE0F"} Your info will be injected into every template below:</strong>
+                <ul style={{ margin: "6px 0 0", paddingLeft: 18, fontSize: 12, color: "#8aa", lineHeight: 1.6 }}>
+                  <li><strong>Topic:</strong> {lessonInfo.title}</li>
+                  {lessonInfo.outcomes && <li><strong>Outcomes:</strong> {lessonInfo.outcomes.split("\n").filter(Boolean).length} learning outcome(s)</li>}
+                  {lessonInfo.resourceType && <li><strong>Format:</strong> {resourceDesc(lessonInfo.resourceType)}</li>}
+                  {lessonInfo.methods && <li><strong>Current method:</strong> {lessonInfo.methods}</li>}
+                  {lessonInfo.frustrations && <li><strong>Frustration:</strong> {lessonInfo.frustrations}</li>}
+                </ul>
+              </div>
+            )}
+
+            <button style={{ ...S.btn, ...S.btnP, marginTop: 14, opacity: (lessonInfo.title && lessonInfo.resourceType) ? 1 : 0.4 }} onClick={buildCustomPrompt}>
               {"\u{1F4CB}"} Generate & Copy My Custom Prompt
             </button>
+
             {generatedPrompt && (
               <div style={{ marginTop: 14 }}>
-                <p style={S.copiedBanner}>{"\u2713"} Copied to clipboard &mdash; paste into Copilot</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <p style={S.copiedBanner}>{"\u2713"} Copied to clipboard &mdash; paste into Copilot</p>
+                  <button style={{ ...S.btn, ...S.btnSm, ...S.btnG }} onClick={() => openPrintView(generatedPrompt)}>{"\u{1F5A8}\uFE0F"} Print</button>
+                </div>
                 <pre style={S.codePre}>{generatedPrompt}</pre>
               </div>
             )}
@@ -592,25 +643,39 @@ Suggest the format, questions/tasks, and how to mark it.`;
           <div style={S.sec}>
             <div style={S.stepPill}>STEP 2</div>
             <h2 style={S.secTitle}>Or use a ready-made template</h2>
-            <p style={S.secDesc}>Click to expand. Lesson info from Step 1 auto-fills where possible.</p>
+            <p style={S.secDesc}>
+              {readyForTemplates
+                ? <>Your lesson info is pre-filled into each template. Click to preview, then copy.</>
+                : <><span style={{ color: "#fbbf24" }}>{"\u26A0\uFE0F"} Fill in Step 1 first</span> (at least title, outcomes, and resource type) so the templates are pre-filled with your info.</>
+              }
+            </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {PROMPT_TEMPLATES.map((t, i) => (
-                <div key={i} style={S.tmpl}>
-                  <div style={S.tmplHead} onClick={() => setActiveTemplate(activeTemplate === i ? null : i)}>
-                    <span style={{ fontSize: 20 }}>{t.icon}</span>
-                    <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{t.title}</span>
-                    <span style={{ fontSize: 11, color: "#556" }}>{activeTemplate === i ? "\u25B2" : "\u25BC"}</span>
-                  </div>
-                  {activeTemplate === i && (
-                    <div style={{ padding: "0 14px 14px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                      <pre style={S.codePre}>{t.template}</pre>
-                      <button style={{ ...S.btn, ...S.btnP, ...S.btnSm }} onClick={() => copyTemplate(i, t.template)}>
-                        {copiedIdx === i ? "\u2713 Copied!" : "\u{1F4CB} Copy (auto-filled)"}
-                      </button>
+              {PROMPT_TEMPLATES.map((t, i) => {
+                const filled = t.build(lessonInfo);
+                return (
+                  <div key={i} style={S.tmpl}>
+                    <div style={S.tmplHead} onClick={() => setActiveTemplate(activeTemplate === i ? null : i)}>
+                      <span style={{ fontSize: 20 }}>{t.icon}</span>
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 600 }}>{t.title}</span>
+                      {readyForTemplates && <span style={{ fontSize: 10, color: "#4ade80", marginRight: 6 }}>{"\u2705"} Pre-filled</span>}
+                      <span style={{ fontSize: 11, color: "#556" }}>{activeTemplate === i ? "\u25B2" : "\u25BC"}</span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {activeTemplate === i && (
+                      <div style={{ padding: "0 14px 14px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                        <pre style={S.codePre}>{filled}</pre>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <button style={{ ...S.btn, ...S.btnP, ...S.btnSm }} onClick={() => copyTemplate(i)}>
+                            {copiedIdx === i ? "\u2713 Copied!" : "\u{1F4CB} Copy Prompt"}
+                          </button>
+                          <button style={{ ...S.btn, ...S.btnSm, ...S.btnG }} onClick={() => openPrintView(filled)}>
+                            {"\u{1F5A8}\uFE0F"} Print
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -620,8 +685,8 @@ Suggest the format, questions/tasks, and how to mark it.`;
             <h2 style={S.secTitle}>Open Copilot and prompt away!</h2>
             <div style={S.tipsBox}>
               <p style={S.tipLine}><strong>{"\u{1F517}"} Open Copilot:</strong> Go to <code style={S.codeInline}>copilot.microsoft.com</code> or use the sidebar in Edge</p>
-              <p style={S.tipLine}><strong>{"\u{1F4CB}"} Paste your prompt:</strong> Use Step 1's custom prompt or a Step 2 template</p>
-              <p style={S.tipLine}><strong>{"\u{1F504}"} Iterate:</strong> Try follow-ups like "Make it more practical" or "Add merit/distinction extension tasks"</p>
+              <p style={S.tipLine}><strong>{"\u{1F4CB}"} Paste your prompt:</strong> Use Step 1&apos;s custom prompt or a Step 2 template</p>
+              <p style={S.tipLine}><strong>{"\u{1F504}"} Iterate:</strong> Try follow-ups like &ldquo;Make it more practical&rdquo; or &ldquo;Add merit/distinction extension tasks&rdquo;</p>
               <p style={S.tipLine}><strong>{"\u26A1"} Power moves:</strong> Ask for a mark scheme, student rubric, or self-assessment checklist alongside your assessment</p>
             </div>
           </div>
@@ -632,7 +697,7 @@ Suggest the format, questions/tasks, and how to mark it.`;
             <h2 style={S.secTitle}>Review & Reflect</h2>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10 }}>
               {[
-                { e: "\u2705", t: "What worked well?", d: "Did AI save you time? Suggest ideas you hadn't thought of?" },
+                { e: "\u2705", t: "What worked well?", d: "Did AI save you time? Suggest ideas you hadn\u2019t thought of?" },
                 { e: "\u26A0\uFE0F", t: "What needed editing?", d: "Language, pitch level, factual accuracy?" },
                 { e: "\u{1F504}", t: "What would you change?", d: "How would you refine your prompt next time?" },
               ].map((r, i) => (
@@ -652,7 +717,7 @@ Suggest the format, questions/tasks, and how to mark it.`;
   return null;
 }
 
-// STYLES
+// ======== STYLES ========
 const S = {
   page: {
     fontFamily: "'Instrument Sans', 'DM Sans', system-ui, sans-serif",
@@ -660,7 +725,6 @@ const S = {
     background: "linear-gradient(155deg, #0b1017 0%, #111c2a 35%, #152236 100%)",
     color: "#dde4ed",
   },
-
   welcomeWrap: { maxWidth: 540, margin: "0 auto", padding: "42px 22px", textAlign: "center" },
   chipBadge: {
     display: "inline-block", padding: "3px 13px",
@@ -727,9 +791,7 @@ const S = {
     borderRadius: 10, padding: "12px 16px", marginBottom: 18,
   },
 
-  grid: {
-    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))", gap: 9, marginBottom: 18,
-  },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))", gap: 9, marginBottom: 18 },
   card: {
     background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)",
     borderRadius: 11, padding: "14px 13px", transition: "all 0.2s", minHeight: 105,
@@ -788,6 +850,27 @@ const S = {
     padding: "9px 12px", background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.07)",
     borderRadius: 7, color: "#dde4ed", fontSize: 14, outline: "none", resize: "vertical", fontFamily: "inherit",
   },
+
+  // Resource type picker grid
+  rtGrid: {
+    display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8, marginTop: 4,
+  },
+  rtCard: {
+    background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: 9, padding: "10px", cursor: "pointer", transition: "all 0.15s",
+    display: "flex", flexDirection: "column", gap: 2,
+  },
+  rtCardActive: {
+    background: "rgba(99,179,237,0.08)", borderColor: "rgba(99,179,237,0.35)",
+    boxShadow: "0 0 0 1px rgba(99,179,237,0.15)",
+  },
+
+  summaryBox: {
+    marginTop: 14, padding: "10px 14px",
+    background: "rgba(99,179,237,0.04)", border: "1px solid rgba(99,179,237,0.1)",
+    borderRadius: 8,
+  },
+
   copiedBanner: {
     padding: "7px 12px", background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.12)",
     borderRadius: 7, color: "#4ade80", fontSize: 13, fontWeight: 600, margin: "0 0 8px",
