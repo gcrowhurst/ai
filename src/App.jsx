@@ -470,14 +470,15 @@ function App() {
   const copyBrief = () => { navigator.clipboard.writeText(buildBrief()); setBriefCopied(true); setTimeout(() => setBriefCopied(false), 3000); };
 
   const copyTextAndOpenCopilot = async (text, onComplete) => {
-    const copilotWindow = typeof window !== "undefined" ? window.open("", "_blank") : null;
+    if (typeof window !== "undefined") {
+      // Open directly to avoid tabs getting stuck on about:blank in some browser popup policies.
+      window.open(COPILOT_URL, "_blank", "noopener,noreferrer");
+    }
     try {
       await navigator.clipboard.writeText(text);
     } catch {
       // Ignore clipboard failures and still open Copilot.
     }
-    if (copilotWindow) copilotWindow.location.href = COPILOT_URL;
-    else if (typeof window !== "undefined") window.open(COPILOT_URL, "_blank");
     onComplete?.();
   };
 
