@@ -11,6 +11,7 @@ import { QRCodeSVG } from "qrcode.react";
 
 const STORAGE_KEY = "biz-board-v2";
 const FEEDBACK_KEY = "session-feedback-v1";
+const COPILOT_URL = "https://copilot.microsoft.com/";
 
 // ======== API + localStorage hybrid storage ========
 // Writes go to BOTH the API (cross-device) and localStorage (fallback).
@@ -77,6 +78,54 @@ const ETHICS_POINTS = [
   { Icon: ClipboardCheck, title: "Quality Assurance", desc: "Cross-check AI-generated answers and marking criteria against your subject expertise and awarding body standards." },
   { Icon: Lightbulb, title: "Transparency", desc: "Be open with colleagues about AI use. Share what works. Build a culture of ethical experimentation." },
 ];
+
+const HELP_CONTENT = {
+  name: {
+    title: "What this session is about",
+    intro: "This session is aimed at teachers and focuses on AI for assessment. We are demonstrating how a well-designed prompt can help tools like Copilot produce strong, usable classroom resources in a fraction of the usual time.",
+    points: [
+      "The starter activity shows how quickly AI can turn scattered ideas into a polished outcome.",
+      "The wider goal is to help teachers see how AI can reduce workload while improving resource design.",
+      "We also want staff to feel confident empowering students to use the tools available to them thoughtfully and responsibly.",
+    ],
+  },
+  welcome: {
+    title: "How the session works",
+    intro: "You will move from a playful collaborative task into a practical assessment-design workflow using AI.",
+    points: [
+      "The opening activity gives everyone one small part of a task so you can watch AI assemble the final product live.",
+      "That makes the value of a good prompt visible before you apply the same idea to real assessment design.",
+      "The main workshop then turns your lesson details into prompts you can use with Copilot to create assessment resources.",
+    ],
+  },
+  icebreaker: {
+    title: "Why we do the starter activity",
+    intro: "The Worst Best Business is not just an icebreaker. It is a quick demonstration of how effective AI can be when people contribute clear inputs and the system is prompted well.",
+    points: [
+      "Teachers each provide one creative building block, which keeps the task light and collaborative.",
+      "AI then turns those separate pieces into a coherent output, showing how powerful synthesis can be.",
+      "This models the same process you will use for assessment design: strong inputs plus a strong prompt lead to stronger resources.",
+    ],
+  },
+  workshop: {
+    title: "Why AI for assessment",
+    intro: "This workshop focuses on using AI to improve assessment planning, drafting, and adaptation rather than replacing teacher judgement.",
+    points: [
+      "A well-designed prompt can generate quizzes, scenarios, checklists, and web-based resources tailored to your outcomes.",
+      "The aim is to save planning time and give you better first drafts to refine professionally.",
+      "The real skill is prompt design and review: teachers stay in control of quality, curriculum fit, and appropriateness.",
+    ],
+  },
+  feedback: {
+    title: "Why your feedback matters",
+    intro: "The final feedback helps shape future staff development around AI use in teaching and assessment.",
+    points: [
+      "It shows which parts of the session were immediately useful in practice.",
+      "It helps identify where staff need more support around prompting or evaluation.",
+      "It gives a quick picture of confidence and buy-in across the group.",
+    ],
+  },
+};
 
 // ============ PROMPT TEMPLATE BUILDER ============
 // Each template is a function that takes lessonInfo and returns the fully-filled prompt string.
@@ -256,6 +305,7 @@ function App() {
   const [nameSet, setNameSet] = useState(false);
   const [facilitatorMode, setFacilitatorMode] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   // Icebreaker
   const [boardData, setBoardData] = useState({});
@@ -267,6 +317,7 @@ function App() {
 
   // Workshop
   const [copiedIdx, setCopiedIdx] = useState(null);
+  const [promptCopied, setPromptCopied] = useState(false);
   const [lessonInfo, setLessonInfo] = useState({
     title: "", outcomes: "", methods: "", frustrations: "", resourceType: "website",
   });
@@ -402,6 +453,7 @@ function App() {
   const totalAnswered = Object.values(boardData).filter(v => v.answer).length;
   const totalClaimed = Object.keys(boardData).length;
   const allComplete = totalAnswered === BUSINESS_QUESTIONS.length;
+  const activeHelp = HELP_CONTENT[nameSet ? view : "name"] || HELP_CONTENT.welcome;
 
   const buildBrief = () => {
     const lines = BUSINESS_QUESTIONS.map(q => {
@@ -414,12 +466,25 @@ function App() {
 
   const copyBrief = () => { navigator.clipboard.writeText(buildBrief()); setBriefCopied(true); setTimeout(() => setBriefCopied(false), 3000); };
 
+  const copyTextAndOpenCopilot = async (text, onComplete) => {
+    const copilotWindow = typeof window !== "undefined" ? window.open("", "_blank") : null;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Ignore clipboard failures and still open Copilot.
+    }
+    if (copilotWindow) copilotWindow.location.href = COPILOT_URL;
+    else if (typeof window !== "undefined") window.open(COPILOT_URL, "_blank");
+    onComplete?.();
+  };
+
   // Build and copy a template prompt with ALL user info prefilled
-  const copyTemplate = (idx) => {
+  const copyTemplate = async (idx) => {
     const prompt = PROMPT_TEMPLATES[idx].build(lessonInfo);
-    navigator.clipboard.writeText(prompt);
-    setCopiedIdx(idx);
-    setTimeout(() => setCopiedIdx(null), 2000);
+    await copyTextAndOpenCopilot(prompt, () => {
+      setCopiedIdx(idx);
+      setTimeout(() => setCopiedIdx(null), 2000);
+    });
   };
 
   // Build custom prompt (Step 1)
@@ -446,7 +511,15 @@ ${resourceFormatInstructions("website")}
 
 Provide the complete resource ready for me to use, not just suggestions.`;
     setGeneratedPrompt(prompt);
-    navigator.clipboard.writeText(prompt);
+    setPromptCopied(false);
+  };
+
+  const copyGeneratedPrompt = async () => {
+    if (!generatedPrompt) return;
+    await copyTextAndOpenCopilot(generatedPrompt, () => {
+      setPromptCopied(true);
+      setTimeout(() => setPromptCopied(false), 3000);
+    });
   };
 
   // Print view
@@ -468,6 +541,25 @@ Provide the complete resource ready for me to use, not just suggestions.`;
         <p style={{ margin: "14px 0 0", fontSize: 11, color: "#63b3ed", wordBreak: "break-all", maxWidth: 240, textAlign: "center" }}>
           {typeof window !== "undefined" ? window.location.href : ""}
         </p>
+      </div>
+    </div>
+  );
+
+  const helpOverlay = showHelp && (
+    <div style={S.overlay} onClick={() => setShowHelp(false)}>
+      <div style={S.helpCard} onClick={e => e.stopPropagation()}>
+        <button style={S.qrClose} onClick={() => setShowHelp(false)}><X size={18} /></button>
+        <div style={S.helpHeaderIcon}><HelpCircle size={18} /></div>
+        <h3 style={{ margin: "0 0 8px", fontSize: 20, fontWeight: 700 }}>{activeHelp.title}</h3>
+        <p style={{ margin: "0 0 16px", fontSize: 13, color: "#8ea4b6", lineHeight: 1.7 }}>{activeHelp.intro}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {activeHelp.points.map((point) => (
+            <div key={point} style={S.helpPoint}>
+              <span style={S.helpDot} />
+              <p style={{ margin: 0, fontSize: 13, color: "#d7e2ec", lineHeight: 1.6 }}>{point}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -516,11 +608,30 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         {qrOverlay}
+        {helpOverlay}
         <div style={S.nameGate}>
-          <button style={S.qrBtn} onClick={() => setShowQR(true)}><QrCode size={18} /></button>
+          <div style={S.topActionRow}>
+            <button style={S.qrBtnInline} onClick={() => setShowQR(true)}><QrCode size={18} /></button>
+            <button style={S.qrBtnInline} onClick={() => setShowHelp(true)}><HelpCircle size={18} /></button>
+          </div>
           <div style={S.chipBadge}>CPD SESSION</div>
           <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
           <p style={S.heroSub}>A 50-minute interactive workshop</p>
+
+          <div style={S.sessionMetaWrap}>
+            <div style={S.sessionMetaCard}>
+              <span style={S.sessionMetaLabel}>Session Aim</span>
+              <p style={S.sessionMetaText}>AI for assessment for teachers: demonstrating how a well-designed prompt can help Copilot create strong, ready-to-adapt classroom resources.</p>
+            </div>
+            <div style={S.sessionMetaCard}>
+              <span style={S.sessionMetaLabel}>Session Outcomes</span>
+              <ul style={S.sessionMetaList}>
+                <li>See how AI can turn clear inputs into polished outputs.</li>
+                <li>Learn how to write stronger prompts for assessment design.</li>
+                <li>Explore how these tools can empower teachers and students to use AI well.</li>
+              </ul>
+            </div>
+          </div>
 
           <div style={S.nameBox}>
             <User size={36} style={{ color: "#63b3ed", opacity: 0.8 }} />
@@ -550,8 +661,12 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         {qrOverlay}
+        {helpOverlay}
         <div style={S.welcomeWrap}>
-          <button style={{ ...S.qrBtn, position: "fixed", top: 16, right: 16 }} onClick={() => setShowQR(true)}><QrCode size={18} /></button>
+          <div style={S.fixedTopActions}>
+            <button style={S.qrBtnInline} onClick={() => setShowQR(true)}><QrCode size={18} /></button>
+            <button style={S.qrBtnInline} onClick={() => setShowHelp(true)}><HelpCircle size={18} /></button>
+          </div>
           <div style={S.chipBadge}>CPD SESSION</div>
           <h1 style={S.heroTitle}>AI-Powered<br/>Assessment Design</h1>
           <p style={{ color: "#6b7f92", margin: "0 0 20px", fontSize: 15 }}>
@@ -594,10 +709,12 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         {qrOverlay}
+        {helpOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
           <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Dices size={16} /> The Worst Best Business</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button style={S.qrBtnSm} onClick={() => setShowHelp(true)}><HelpCircle size={14} /></button>
             <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
             <span style={S.barBadge}>{totalAnswered}/{BUSINESS_QUESTIONS.length}</span>
           </div>
@@ -702,10 +819,12 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         {qrOverlay}
+        {helpOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
           <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Wrench size={16} /> Assessment Design Workshop</span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <button style={S.qrBtnSm} onClick={() => setShowHelp(true)}><HelpCircle size={14} /></button>
             <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
             <button style={{ ...S.btn, ...S.btnSm, ...(showEthics ? S.btnAct : S.btnG), display: "flex", alignItems: "center", gap: 5 }} onClick={() => setShowEthics(!showEthics)}>
               <Scale size={13} /> Ethics
@@ -783,14 +902,21 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             )}
 
             <button style={{ ...S.btn, ...S.btnP, marginTop: 14, display: "flex", alignItems: "center", gap: 8, opacity: lessonInfo.title ? 1 : 0.4 }} onClick={buildCustomPrompt}>
-              <Copy size={15} /> Generate & Copy My Custom Prompt
+              <Copy size={15} /> Generate My Custom Prompt
             </button>
 
             {generatedPrompt && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                  <p style={{ ...S.copiedBanner, display: "flex", alignItems: "center", gap: 6 }}><Check size={14} /> Copied to clipboard &mdash; paste into Copilot</p>
-                  <button style={{ ...S.btn, ...S.btnSm, ...S.btnG, display: "flex", alignItems: "center", gap: 5 }} onClick={() => openPrintView(generatedPrompt)}><Printer size={13} /> Print</button>
+                  <p style={{ ...S.copiedBanner, ...(promptCopied ? {} : S.pendingBanner), display: "flex", alignItems: "center", gap: 6 }}>
+                    {promptCopied ? <><Check size={14} /> Prompt copied and Copilot opened</> : <><Info size={14} /> Prompt ready to copy into Copilot</>}
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button style={{ ...S.btn, ...S.btnP, ...S.btnSm, display: "flex", alignItems: "center", gap: 5 }} onClick={copyGeneratedPrompt}>
+                      <Copy size={13} /> Copy Prompt & Open Copilot
+                    </button>
+                    <button style={{ ...S.btn, ...S.btnSm, ...S.btnG, display: "flex", alignItems: "center", gap: 5 }} onClick={() => openPrintView(generatedPrompt)}><Printer size={13} /> Print</button>
+                  </div>
                 </div>
                 <pre style={S.codePre}>{generatedPrompt}</pre>
               </div>
@@ -823,7 +949,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                         <pre style={S.codePre}>{filled}</pre>
                         <div style={{ display: "flex", gap: 8 }}>
                           <button style={{ ...S.btn, ...S.btnP, ...S.btnSm, display: "flex", alignItems: "center", gap: 5 }} onClick={() => copyTemplate(i)}>
-                            {copiedIdx === i ? <><Check size={13} /> Copied!</> : <><Copy size={13} /> Copy Prompt</>}
+                            {copiedIdx === i ? <><Check size={13} /> Copied + Opened</> : <><Copy size={13} /> Copy Prompt & Open Copilot</>}
                           </button>
                           <button style={{ ...S.btn, ...S.btnSm, ...S.btnG, display: "flex", alignItems: "center", gap: 5 }} onClick={() => openPrintView(filled)}>
                             <Printer size={13} /> Print
@@ -894,10 +1020,12 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     return (
       <div style={S.page}>
         {qrOverlay}
+        {helpOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("workshop")}><ChevronLeft size={15} /> Back</button>
           <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><MessageSquare size={16} /> Session Feedback</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button style={S.qrBtnSm} onClick={() => setShowHelp(true)}><HelpCircle size={14} /></button>
             <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
             <span style={S.barBadge}>{feedbackData.length} response{feedbackData.length !== 1 ? "s" : ""}</span>
           </div>
@@ -999,6 +1127,12 @@ const S = {
     color: "#dde4ed",
   },
   welcomeWrap: { maxWidth: 540, margin: "0 auto", padding: "42px 22px", textAlign: "center" },
+  fixedTopActions: {
+    position: "fixed", top: 16, right: 16, display: "flex", gap: 10, zIndex: 20,
+  },
+  topActionRow: {
+    position: "absolute", top: 16, right: 16, display: "flex", gap: 10,
+  },
   chipBadge: {
     display: "inline-block", padding: "3px 13px",
     background: "rgba(99,179,237,0.08)", border: "1px solid rgba(99,179,237,0.2)",
@@ -1148,6 +1282,9 @@ const S = {
     padding: "7px 12px", background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.12)",
     borderRadius: 7, color: "#4ade80", fontSize: 13, fontWeight: 600, margin: "0 0 8px",
   },
+  pendingBanner: {
+    background: "rgba(99,179,237,0.06)", border: "1px solid rgba(99,179,237,0.12)", color: "#93c5fd",
+  },
   codePre: {
     background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.05)",
     borderRadius: 8, padding: "12px", fontSize: 12, lineHeight: 1.6,
@@ -1184,11 +1321,25 @@ const S = {
     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
     minHeight: "100dvh", padding: "40px 20px", textAlign: "center", position: "relative",
   },
+  sessionMetaWrap: {
+    width: "100%", maxWidth: 760, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: 14, marginTop: 6,
+  },
+  sessionMetaCard: {
+    textAlign: "left", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: 14, padding: "18px 18px 16px",
+  },
+  sessionMetaLabel: {
+    display: "inline-block", fontSize: 10, fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase",
+    color: "#63b3ed", marginBottom: 8,
+  },
+  sessionMetaText: { fontSize: 14, color: "#d7e2ec", lineHeight: 1.7, margin: 0 },
+  sessionMetaList: { margin: "6px 0 0 18px", color: "#d7e2ec", fontSize: 14, lineHeight: 1.8 },
   nameBox: {
     display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
     padding: "24px 28px", background: "rgba(251,191,36,0.05)",
     border: "1px solid rgba(251,191,36,0.15)", borderRadius: 14,
-    marginTop: 24, width: "100%", maxWidth: 360,
+    marginTop: 20, width: "100%", maxWidth: 360,
   },
   skipBtn: {
     background: "none", border: "none", color: "#556", fontSize: 12,
@@ -1246,10 +1397,31 @@ const S = {
     borderRadius: 8, padding: "8px", cursor: "pointer", color: "#63b3ed",
     display: "flex", alignItems: "center", justifyContent: "center",
   },
+  qrBtnInline: {
+    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: 8, padding: "8px", cursor: "pointer", color: "#63b3ed",
+    display: "flex", alignItems: "center", justifyContent: "center",
+  },
   qrBtnSm: {
     background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
     borderRadius: 6, padding: "4px 6px", cursor: "pointer", color: "#63b3ed",
     display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  helpCard: {
+    background: "linear-gradient(145deg, #172131, #111926)", border: "1px solid rgba(99,179,237,0.14)",
+    borderRadius: 18, padding: "28px 24px 24px", position: "relative", maxWidth: 520, width: "calc(100% - 32px)",
+    boxShadow: "0 24px 80px rgba(0,0,0,0.35)",
+  },
+  helpHeaderIcon: {
+    width: 38, height: 38, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center",
+    background: "rgba(99,179,237,0.12)", color: "#63b3ed", marginBottom: 14,
+  },
+  helpPoint: {
+    display: "flex", alignItems: "flex-start", gap: 10,
+  },
+  helpDot: {
+    width: 8, height: 8, borderRadius: "50%", background: "#63b3ed", marginTop: 7, flexShrink: 0,
+    boxShadow: "0 0 0 4px rgba(99,179,237,0.12)",
   },
 };
 
