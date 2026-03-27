@@ -304,6 +304,9 @@ function App() {
   const [userName, setUserName] = useState("");
   const [nameSet, setNameSet] = useState(false);
   const [facilitatorMode, setFacilitatorMode] = useState(false);
+  const [showFacilitatorLogin, setShowFacilitatorLogin] = useState(false);
+  const [facilitatorPassword, setFacilitatorPassword] = useState("");
+  const [facilitatorError, setFacilitatorError] = useState("");
   const [showQR, setShowQR] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -522,6 +525,19 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     });
   };
 
+  const handleFacilitatorLogin = () => {
+    if (facilitatorPassword !== "Admin") {
+      setFacilitatorError("Incorrect password");
+      return;
+    }
+    setUserName("Facilitator");
+    setNameSet(true);
+    setFacilitatorMode(true);
+    setShowFacilitatorLogin(false);
+    setFacilitatorPassword("");
+    setFacilitatorError("");
+  };
+
   // Print view
   const openPrintView = (content) => {
     setPrintContent(content);
@@ -648,8 +664,49 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             </button>
           </div>
 
-          <button style={S.skipBtn} onClick={() => { setUserName("Facilitator"); setNameSet(true); setFacilitatorMode(true); }}>
-            Skip &mdash; I&apos;m the facilitator
+          {showFacilitatorLogin && (
+            <div style={S.facilitatorLoginBox}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 6px" }}>Facilitator Login</h3>
+              <p style={{ fontSize: 12, color: "#8ea4b6", margin: "0 0 12px" }}>Enter the facilitator password to continue.</p>
+              <input
+                type="password"
+                style={{ ...S.heroInput, maxWidth: 320, fontSize: 16, padding: "12px 14px", textAlign: "left" }}
+                placeholder="Password"
+                value={facilitatorPassword}
+                onChange={e => {
+                  setFacilitatorPassword(e.target.value);
+                  if (facilitatorError) setFacilitatorError("");
+                }}
+                onKeyDown={e => e.key === "Enter" && handleFacilitatorLogin()}
+              />
+              {facilitatorError && <p style={S.facilitatorError}>{facilitatorError}</p>}
+              <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap", justifyContent: "center" }}>
+                <button style={{ ...S.btn, ...S.btnP, ...S.btnSm, opacity: facilitatorPassword ? 1 : 0.5 }} onClick={handleFacilitatorLogin}>
+                  Enter Facilitator Mode
+                </button>
+                <button
+                  style={{ ...S.btn, ...S.btnG, ...S.btnSm }}
+                  onClick={() => {
+                    setShowFacilitatorLogin(false);
+                    setFacilitatorPassword("");
+                    setFacilitatorError("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button
+            style={S.skipBtn}
+            onClick={() => {
+              setShowFacilitatorLogin(prev => !prev);
+              setFacilitatorPassword("");
+              setFacilitatorError("");
+            }}
+          >
+            I&apos;m the facilitator
           </button>
         </div>
       </div>
@@ -1340,6 +1397,14 @@ const S = {
     padding: "24px 28px", background: "rgba(251,191,36,0.05)",
     border: "1px solid rgba(251,191,36,0.15)", borderRadius: 14,
     marginTop: 20, width: "100%", maxWidth: 360,
+  },
+  facilitatorLoginBox: {
+    width: "100%", maxWidth: 360, marginTop: 14, padding: "18px 20px",
+    background: "rgba(99,179,237,0.05)", border: "1px solid rgba(99,179,237,0.14)",
+    borderRadius: 14, textAlign: "center",
+  },
+  facilitatorError: {
+    fontSize: 12, color: "#fda4af", margin: "8px 0 0",
   },
   skipBtn: {
     background: "none", border: "none", color: "#556", fontSize: 12,
