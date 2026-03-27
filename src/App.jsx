@@ -5,7 +5,7 @@ import {
   ChevronUp, ChevronDown, ChevronLeft, QrCode, X,
   MousePointerClick, FileText, Globe, LayoutDashboard, FlaskConical, Video,
   Eye, Lock, Target, ClipboardCheck, ClipboardList,
-  Info, HelpCircle, BookOpen, Layers, User, Pencil, Clock,
+  Info, HelpCircle, BookOpen, Layers, User, Pencil, Clock, GraduationCap, Palette, Upload,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 
@@ -57,17 +57,17 @@ const FEEDBACK_FACES = [
 // Resource type locked to "website" — the workshop output is always a self-contained HTML file.
 const RESOURCE_TYPE_WEBSITE = { id: "website", label: "Website / Web App", Icon: Globe, desc: "A single self-contained HTML file you can upload to SharePoint or share directly" };
 
-const BUSINESS_QUESTIONS = [
-  { id: "product", label: "The Product", question: "What does this business sell?", hint: "Be creative \u2014 products, services, experiences. The weirder the better.", placeholder: "e.g. Edible furniture for pets, time-travel insurance...", emoji: "\u{1F6CD}\uFE0F" },
-  { id: "customer", label: "Target Customer", question: "Who is the ideal (unlikely) customer?", hint: "Think of the most unexpected demographic.", placeholder: "e.g. Retired astronauts, anxious cats, medieval re-enactors...", emoji: "\u{1F3AF}" },
-  { id: "name", label: "Business Name", question: "What is the business called?", hint: "Make it memorable. Puns welcome.", placeholder: "e.g. Chairish the Moment, Paws & Effect...", emoji: "\u2728" },
-  { id: "slogan", label: "The Slogan", question: "What\u2019s the company slogan?", hint: "Channel your inner Mad Men. Keep it punchy.", placeholder: "e.g. \u2018Because gravity is optional\u2019...", emoji: "\u{1F4E3}" },
-  { id: "origin", label: "Origin Story", question: "How did the founder come up with this idea?", hint: "The stranger the origin story, the better.", placeholder: "e.g. Fell asleep in IKEA and had a vision...", emoji: "\u{1F4A1}" },
-  { id: "disaster", label: "Year One Disaster", question: "What went spectacularly wrong in year one?", hint: "Every great business has a crisis. What was theirs?", placeholder: "e.g. The CEO turned out to be three raccoons in a trenchcoat...", emoji: "\u{1F4A5}" },
-  { id: "pivot", label: "The Pivot", question: "How did they heroically recover?", hint: "Out of disaster comes innovation.", placeholder: "e.g. Partnered with NASA, went underground (literally)...", emoji: "\u{1F680}" },
-  { id: "feature", label: "Killer Feature", question: "What\u2019s the one feature that makes this product irresistible?", hint: "The thing competitors can\u2019t replicate.", placeholder: "e.g. It glows in the dark, it reads your mood...", emoji: "\u26A1" },
-  { id: "testimonial", label: "Customer Testimonial", question: "Write a fake 5-star customer review.", hint: "Be dramatic. Be emotional. Be ridiculous.", placeholder: "e.g. \u2018This product saved my marriage AND my souffl\u00E9. 10/10\u2019...", emoji: "\u2B50" },
-  { id: "future", label: "Future Vision", question: "Where is this business in 10 years?", hint: "Dream big. World domination? Space expansion? IPO on Mars?", placeholder: "e.g. Franchises on every continent including Antarctica...", emoji: "\u{1F52E}" },
+const TEACHING_TOOL_QUESTIONS = [
+  { id: "subject",  label: "Subject & Topic",   question: "What subject and topic is this learning tool for?", hint: "The more specific, the better the output.", placeholder: "e.g. GCSE Biology — Mitosis, A-Level History — Cold War, Year 7 Fractions...", emoji: "📚" },
+  { id: "learners", label: "Your Learners",      question: "Who are the learners and what is their level?", hint: "Age, year group, qualification level, or any relevant context.", placeholder: "e.g. Year 10 BTEC Level 2, adult apprentices, mixed-ability Year 7...", emoji: "🎯" },
+  { id: "goal",     label: "The Big Idea",       question: "What is the ONE core concept students must understand?", hint: "If they leave knowing just one thing — what should it be?", placeholder: "e.g. DNA carries genetic instructions, correlation ≠ causation...", emoji: "💡" },
+  { id: "struggle", label: "The Struggle",       question: "What do students ALWAYS get wrong or find confusing?", hint: "The most valuable input — target the real sticking point.", placeholder: "e.g. They confuse mitosis & meiosis, can’t evaluate sources...", emoji: "⚠️" },
+  { id: "activity", label: "Activity Style",     question: "What kind of activity gets your students most engaged?", hint: "Think about what has worked in your classroom before.", placeholder: "e.g. Real-world scenarios, debates, game-show format, problem-solving...", emoji: "🎮" },
+  { id: "format",   label: "Delivery Format",    question: "How should students use this tool — and on what device?", hint: "Physical worksheet? Individual laptops? Projected on-screen?", placeholder: "e.g. Laptops individually, projected whole class, printed handout...", emoji: "📱" },
+  { id: "time",     label: "Time Available",     question: "How much time is available for this activity?", hint: "Is this a starter, a full lesson task, or homework?", placeholder: "e.g. 10-minute starter, 30-minute task, full lesson, homework...", emoji: "⏱️" },
+  { id: "feedback", label: "Feedback Design",    question: "How should the tool give students feedback on their answers?", hint: "Instant auto-check? Model answer reveal? Peer marking?", placeholder: "e.g. Instant right/wrong, traffic lights, reveal model answer...", emoji: "✅" },
+  { id: "stretch",  label: "Stretch Task",       question: "What stretch challenge should top students get?", hint: "Push beyond recall — analysis, evaluation, or creation.", placeholder: "e.g. Apply to an unfamiliar context, argue the opposite case...", emoji: "🚀" },
+  { id: "feel",     label: "Tone & Feel",        question: "What tone or personality should the tool have?", hint: "Playful? Professional? Competitive? Calm? Story-driven?", placeholder: "e.g. Game-show energy, calm and focused, storytelling, competitive...", emoji: "✨" },
 ];
 
 const ETHICS_POINTS = [
@@ -77,6 +77,28 @@ const ETHICS_POINTS = [
   { Icon: Target, title: "Pedagogical Judgement", desc: "You know your students. AI doesn\u2019t. Always adapt outputs to your class context and individual needs." },
   { Icon: ClipboardCheck, title: "Quality Assurance", desc: "Cross-check AI-generated answers and marking criteria against your subject expertise and awarding body standards." },
   { Icon: Lightbulb, title: "Transparency", desc: "Be open with colleagues about AI use. Share what works. Build a culture of ethical experimentation." },
+];
+
+const COLOUR_PALETTES = [
+  { id: "ocean",  label: "Ocean Blue",    primary: "#2563eb", accent: "#38bdf8", preview: ["#0f172a","#2563eb","#38bdf8"] },
+  { id: "forest", label: "Forest Green",  primary: "#16a34a", accent: "#4ade80", preview: ["#071a0a","#16a34a","#4ade80"] },
+  { id: "amber",  label: "Warm Amber",    primary: "#d97706", accent: "#fbbf24", preview: ["#1a1200","#d97706","#fbbf24"] },
+  { id: "rose",   label: "Rose Red",      primary: "#e11d48", accent: "#fb7185", preview: ["#1a0610","#e11d48","#fb7185"] },
+  { id: "violet", label: "Violet",        primary: "#7c3aed", accent: "#a78bfa", preview: ["#0f0a1a","#7c3aed","#a78bfa"] },
+  { id: "slate",  label: "Neutral Slate", primary: "#475569", accent: "#94a3b8", preview: ["#0f172a","#475569","#94a3b8"] },
+];
+
+const ASSESSMENT_TYPES = [
+  { id: "mcq",       label: "Multiple Choice Quiz" },
+  { id: "scenario",  label: "Real-world Scenario" },
+  { id: "dragdrop",  label: "Drag & Drop" },
+  { id: "fillin",    label: "Fill in the Blanks" },
+  { id: "matching",  label: "Matching Pairs" },
+  { id: "truefalse", label: "True / False" },
+  { id: "short",     label: "Short Answer" },
+  { id: "extended",  label: "Extended Response" },
+  { id: "checklist", label: "Practical Checklist" },
+  { id: "peer",      label: "Peer Assessment" },
 ];
 
 const HELP_CONTENT = {
@@ -99,12 +121,12 @@ const HELP_CONTENT = {
     ],
   },
   icebreaker: {
-    title: "Why we do the starter activity",
-    intro: "The Worst Best Business is not just an icebreaker. It is a quick demonstration of how effective AI can be when people contribute clear inputs and the system is prompted well.",
+    title: "Why we build a learning tool together",
+    intro: "This collaborative activity shows how powerful AI becomes when given clear, structured inputs. Each person contributes one design decision — together you build the blueprint for a complete learning tool.",
     points: [
-      "Teachers each provide one creative building block, which keeps the task light and collaborative.",
-      "AI then turns those separate pieces into a coherent output, showing how powerful synthesis can be.",
-      "This models the same process you will use for assessment design: strong inputs plus a strong prompt lead to stronger resources.",
+      "Everyone answers just one question, keeping the task fast and low-pressure.",
+      "When all 10 inputs are combined, AI can generate a complete, classroom-ready learning tool from that brief.",
+      "This is the same input-to-output process you will use in the workshop — strong inputs make strong prompts.",
     ],
   },
   workshop: {
@@ -177,6 +199,19 @@ function resourceFormatInstructions(type) {
 - Include timing guidance and any required resources.`;
     default: return "";
   }
+}
+
+function buildPromptExtras(info) {
+  const palette = COLOUR_PALETTES.find(p => p.id === info.palette) || COLOUR_PALETTES[0];
+  const parts = [];
+  if (info.criteria && info.criteria.trim()) {
+    parts.push("ASSESSMENT CRITERIA / MARK SCHEME (provided by teacher):\\n" + info.criteria.trim() + "\\n\\nEvery question, task, and feedback comment MUST align to these criteria.");
+  }
+  if (info.assessmentTypes && info.assessmentTypes.length > 0) {
+    parts.push("ASSESSMENT TYPES TO INCLUDE: " + info.assessmentTypes.join(", ") + "\\n(Use a mix of these types throughout the resource.)");
+  }
+  parts.push("OUTPUT COLOUR THEME: " + palette.label + " — primary colour " + palette.primary + ", accent " + palette.accent + ".");
+  return parts.join("\\n\\n");
 }
 
 const PROMPT_TEMPLATES = [
@@ -322,7 +357,7 @@ function App() {
   const [copiedIdx, setCopiedIdx] = useState(null);
   const [promptCopied, setPromptCopied] = useState(false);
   const [lessonInfo, setLessonInfo] = useState({
-    title: "", outcomes: "", methods: "", frustrations: "", resourceType: "website",
+    title: "", outcomes: "", methods: "", frustrations: "", resourceType: "website", palette: "ocean", assessmentTypes: [], criteria: "",
   });
   const [generatedPrompt, setGeneratedPrompt] = useState("");
   const [activeTemplate, setActiveTemplate] = useState(null);
@@ -455,16 +490,16 @@ function App() {
 
   const totalAnswered = Object.values(boardData).filter(v => v.answer).length;
   const totalClaimed = Object.keys(boardData).length;
-  const allComplete = totalAnswered === BUSINESS_QUESTIONS.length;
+  const allComplete = totalAnswered === TEACHING_TOOL_QUESTIONS.length;
   const activeHelp = HELP_CONTENT[nameSet ? view : "name"] || HELP_CONTENT.welcome;
 
   const buildBrief = () => {
-    const lines = BUSINESS_QUESTIONS.map(q => {
+    const lines = TEACHING_TOOL_QUESTIONS.map(q => {
       const entry = boardData[q.id];
-      if (entry?.answer) return `${q.label}: ${entry.answer} (by ${entry.name})`;
-      return `${q.label}: [not answered]`;
+      if (entry?.answer) return `${q.label}: ${entry.answer} (contributed by ${entry.name})`;
+      return `${q.label}: [not provided]`;
     }).join("\n");
-    return `Using the following collaboratively-created fictional business details, build a fun, professional-looking single-page website. Include all the details below. Make it visually striking and entertaining:\n\n${lines}\n\nCreate a real startup landing page with sections for the product, about us / origin story, features, testimonials, and a call to action. Keep the tone playful and fun.`;
+    return `Using the following collaboratively-designed parameters, create a complete, self-contained HTML learning tool for real classroom use.\n\nDESIGN BRIEF:\n${lines}\n\nBUILD REQUIREMENTS:\n- Single .html file with ALL CSS and JavaScript embedded (no external dependencies)\n- Works immediately when opened in any browser\n- Targets the specific struggle point — build activities that directly address the misconception\n- Clear student instructions at the top\n- Deliver feedback in the style described\n- Include the stretch challenge as an optional extension section\n- Match the tone and feel described\n- Visually polished and mobile-responsive\n\nProduce the complete, ready-to-use HTML file.`;
   };
 
   const copyBrief = () => { navigator.clipboard.writeText(buildBrief()); setBriefCopied(true); setTimeout(() => setBriefCopied(false), 3000); };
@@ -484,7 +519,9 @@ function App() {
 
   // Build and copy a template prompt with ALL user info prefilled
   const copyTemplate = async (idx) => {
-    const prompt = PROMPT_TEMPLATES[idx].build(lessonInfo);
+    const base = PROMPT_TEMPLATES[idx].build(lessonInfo);
+    const extras = buildPromptExtras(lessonInfo);
+    const prompt = base + (extras ? `\n\n${extras}` : "");
     await copyTextAndOpenCopilot(prompt, () => {
       setCopiedIdx(idx);
       setTimeout(() => setCopiedIdx(null), 2000);
@@ -494,6 +531,7 @@ function App() {
   // Build custom prompt (Step 1)
   const buildCustomPrompt = () => {
     if (!lessonInfo.title) return;
+    const extras = buildPromptExtras(lessonInfo);
     const prompt = `I teach a lesson called "${lessonInfo.title}".
 
 LEARNING OUTCOMES students must demonstrate:
@@ -512,6 +550,8 @@ Please design a complete, ready-to-use assessment resource that:
 - Includes model answers or expected responses
 
 ${resourceFormatInstructions("website")}
+
+${extras}
 
 Provide the complete resource ready for me to use, not just suggestions.`;
     setGeneratedPrompt(prompt);
@@ -714,6 +754,11 @@ Provide the complete resource ready for me to use, not just suggestions.`;
     );
   }
 
+  // ===== GITHUB FOR EDUCATORS =====
+  if (view === "github") {
+    return <GitHubPage onBack={() => setView("welcome")} />;
+  }
+
   // ===== WELCOME (main nav, only shown after name entered) =====
   if (view === "welcome") {
     return (
@@ -732,9 +777,10 @@ Provide the complete resource ready for me to use, not just suggestions.`;
           </p>
           <div style={S.agenda}>
             {[
-              { t: "12 min", Icon: Dices, l: "The Worst Best Business", d: "Claim a question, build a ridiculous startup together" },
-              { t: "33 min", Icon: Wrench, l: "Assessment Design Workshop", d: "Use Copilot to design a real assessment for your lesson" },
-              { t: "5 min", Icon: Scale, l: "Ethics & Takeaways", d: "Responsible AI use \u2014 what to watch for" },
+              { t: "12 min", Icon: Dices,          l: "Build a Learning Tool",        d: "10 questions, 10 people — together you design an AI-ready learning tool" },
+              { t: "33 min", Icon: Wrench,          l: "Assessment Design Workshop",   d: "Use Copilot to design a real assessment for your lesson" },
+              { t: "5 min",  Icon: Scale,           l: "Ethics & Takeaways",           d: "Responsible AI use — what to watch for" },
+              { t: "next",   Icon: GraduationCap,   l: "GitHub for Educators",         d: "Your next step — learn how GitHub can transform your teaching" },
             ].map((a, i) => (
               <div key={i}>
                 {i > 0 && <div style={S.sep} />}
@@ -746,9 +792,10 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             ))}
           </div>
           <div style={S.stack}>
-            <button style={{ ...S.btn, ...S.btnP, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("icebreaker")}><Dices size={16} /> Start Icebreaker</button>
+            <button style={{ ...S.btn, ...S.btnP, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("icebreaker")}><Dices size={16} /> Start: Build a Learning Tool</button>
             <button style={{ ...S.btn, ...S.btnG, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("workshop")}><Wrench size={16} /> Jump to Workshop</button>
             <button style={{ ...S.btn, ...S.btnG, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("feedback")}><MessageSquare size={16} /> Session Feedback</button>
+            <button style={{ ...S.btn, ...S.btnGH, display: "flex", alignItems: "center", gap: 8 }} onClick={() => setView("github")}><GraduationCap size={16} /> GitHub for Educators →</button>
             {facilitatorMode && (
               <span style={{ fontSize: 11, color: "#e87", marginTop: 4 }}>Facilitator mode active</span>
             )}
@@ -762,7 +809,7 @@ Provide the complete resource ready for me to use, not just suggestions.`;
   if (view === "icebreaker") {
     if (!nameSet) { setView("welcome"); return null; }
     const getStatus = (qId) => { const e = boardData[qId]; if (!e) return "open"; if (e.answer) return "done"; return "claimed"; };
-    const myQ = myClaimedId ? BUSINESS_QUESTIONS.find(q => q.id === myClaimedId) : null;
+    const myQ = myClaimedId ? TEACHING_TOOL_QUESTIONS.find(q => q.id === myClaimedId) : null;
 
     return (
       <div style={S.page}>
@@ -770,14 +817,14 @@ Provide the complete resource ready for me to use, not just suggestions.`;
         {helpOverlay}
         <div style={S.bar}>
           <button style={{ ...S.back, display: "flex", alignItems: "center", gap: 4 }} onClick={() => setView("welcome")}><ChevronLeft size={15} /> Back</button>
-          <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Dices size={16} /> The Worst Best Business</span>
+          <span style={{ ...S.barTitle, display: "flex", alignItems: "center", gap: 6 }}><Dices size={16} /> Build a Learning Tool</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button style={S.qrBtnSm} onClick={() => setShowHelp(true)}><HelpCircle size={14} /></button>
             <button style={S.qrBtnSm} onClick={() => setShowQR(true)}><QrCode size={14} /></button>
-            <span style={S.barBadge}>{totalAnswered}/{BUSINESS_QUESTIONS.length}</span>
+            <span style={S.barBadge}>{totalAnswered}/{TEACHING_TOOL_QUESTIONS.length}</span>
           </div>
         </div>
-        <div style={S.track}><div style={{ ...S.fill, width: `${(totalAnswered / BUSINESS_QUESTIONS.length) * 100}%` }} /></div>
+        <div style={S.track}><div style={{ ...S.fill, width: `${(totalAnswered / TEACHING_TOOL_QUESTIONS.length) * 100}%` }} /></div>
 
         {facilitatorMode && (
           <div style={S.facBar}>
@@ -791,14 +838,14 @@ Provide the complete resource ready for me to use, not just suggestions.`;
           {!myClaimedId && !mySubmitted && (
             <div style={S.instr}>
               <p style={{ margin: 0, fontSize: 14, lineHeight: 1.6, color: "#8aa" }}>
-                <strong>Pick one question</strong> from the board below &mdash; each shapes a different part of our fictional business.
-                Once you claim it, write your answer. Together you&apos;ll build the most ridiculous startup ever.
+                <strong>Pick one question</strong> from the board below &mdash; each captures a different design decision for a real learning tool.
+                Once you claim it, write your answer. Together you&apos;ll build a complete AI-ready brief.
               </p>
             </div>
           )}
 
           <div style={S.grid}>
-            {BUSINESS_QUESTIONS.map((q) => {
+            {TEACHING_TOOL_QUESTIONS.map((q) => {
               const status = getStatus(q.id);
               const entry = boardData[q.id];
               const isMine = entry?.name === userName;
@@ -851,15 +898,14 @@ Provide the complete resource ready for me to use, not just suggestions.`;
 
           {allComplete && (
             <div style={{ textAlign: "center", marginTop: 12 }}>
-              <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><Flag size={22} /> The business is complete!</h2>
-              <p style={{ color: "#7a8ea0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>Every question answered. Copy the brief below and paste it into Claude to generate a website live.</p>
+              <h2 style={{ fontSize: 24, fontWeight: 700, margin: "0 0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}><Flag size={22} /> Learning tool brief complete!</h2>
+              <p style={{ color: "#7a8ea0", fontSize: 14, margin: "0 0 20px", lineHeight: 1.5 }}>All 10 design decisions collected. Copy the brief below and paste it into Copilot to generate a complete learning tool live.</p>
               <div style={S.briefBox}><pre style={S.briefPre}>{buildBrief()}</pre></div>
               <button style={{ ...S.btn, ...S.btnP, ...S.btnLg, marginTop: 4, display: "flex", alignItems: "center", gap: 8, margin: "4px auto 0" }} onClick={copyBrief}>
-                {briefCopied ? <><Check size={16} /> Copied to clipboard!</> : <><Clipboard size={16} /> Copy Brief to Clipboard</>}
+                {briefCopied ? <><Check size={16} /> Copied to clipboard!</> : <><Clipboard size={16} /> Copy Brief &amp; Open Copilot</>}
               </button>
               <div style={S.briefNote}>
-                <strong style={{ display: "flex", alignItems: "center", gap: 6 }}><Lightbulb size={14} /> What just happened:</strong> Each of you contributed one piece of creative input. Now AI will synthesise it
-                into a structured website &mdash; messy human creativity &rarr; polished output. That&apos;s exactly the skill you&apos;ll use next to design assessments with Copilot.
+                <strong style={{ display: "flex", alignItems: "center", gap: 6 }}><Lightbulb size={14} /> What just happened:</strong> Each of you contributed one design decision. Copilot will now synthesise all 10 inputs into a complete, classroom-ready learning tool &mdash; that&apos;s the power of structured prompting. You&apos;ll use exactly this skill in the Workshop.
               </div>
               <button style={{ ...S.btn, ...S.btnG, marginTop: 14 }} onClick={() => setView("workshop")}>Continue to Workshop &rarr;</button>
             </div>
@@ -943,6 +989,63 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                 <input style={S.inp} placeholder="e.g. Students find it boring, takes ages to mark"
                   value={lessonInfo.frustrations} onChange={e => setLessonInfo(p => ({ ...p, frustrations: e.target.value }))} />
               </div>
+
+              {/* COLOUR PALETTE */}
+              <div style={S.fld}>
+                <label style={{ ...S.lbl, display: "flex", alignItems: "center", gap: 5 }}><Palette size={11} /> Output Colour Palette</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 2 }}>
+                  {COLOUR_PALETTES.map(p => (
+                    <button key={p.id} onClick={() => setLessonInfo(li => ({ ...li, palette: p.id }))}
+                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 8, border: `1px solid ${lessonInfo.palette === p.id ? p.primary : "rgba(255,255,255,0.08)"}`, background: lessonInfo.palette === p.id ? `${p.primary}18` : "rgba(255,255,255,0.02)", cursor: "pointer", transition: "all 0.15s" }}>
+                      <div style={{ display: "flex", gap: 2 }}>
+                        {p.preview.map((c, i) => <span key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: c, border: "1px solid rgba(0,0,0,0.3)" }} />)}
+                      </div>
+                      <span style={{ fontSize: 11, color: lessonInfo.palette === p.id ? p.accent : "#7a8ea0", fontWeight: lessonInfo.palette === p.id ? 700 : 400 }}>{p.label}</span>
+                      {lessonInfo.palette === p.id && <Check size={10} style={{ color: p.accent }} />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ASSESSMENT TYPES */}
+              <div style={S.fld}>
+                <label style={{ ...S.lbl, display: "flex", alignItems: "center", gap: 5 }}><ClipboardList size={11} /> Assessment Types to Include</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
+                  {ASSESSMENT_TYPES.map(t => {
+                    const checked = lessonInfo.assessmentTypes.includes(t.id);
+                    return (
+                      <button key={t.id} onClick={() => setLessonInfo(li => ({ ...li, assessmentTypes: checked ? li.assessmentTypes.filter(x => x !== t.id) : [...li.assessmentTypes, t.id] }))}
+                        style={{ padding: "4px 10px", borderRadius: 6, border: `1px solid ${checked ? "rgba(99,179,237,0.4)" : "rgba(255,255,255,0.08)"}`, background: checked ? "rgba(99,179,237,0.1)" : "rgba(255,255,255,0.02)", color: checked ? "#63b3ed" : "#5e7080", fontSize: 11, fontWeight: checked ? 700 : 400, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, transition: "all 0.15s" }}>
+                        {checked && <Check size={9} />}{t.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p style={{ fontSize: 11, color: "#405060", margin: "4px 0 0" }}>Leave blank to let AI choose the best mix.</p>
+              </div>
+
+              {/* ASSESSMENT CRITERIA */}
+              <div style={S.fld}>
+                <label style={{ ...S.lbl, display: "flex", alignItems: "center", gap: 5 }}><Upload size={11} /> Assessment Criteria / Mark Scheme (optional)</label>
+                <textarea style={{ ...S.txa, fontSize: 12 }} rows={4}
+                  placeholder={"Paste your mark scheme, criteria, or specification points here — they will be embedded into every prompt.\n\ne.g. Pass: identify the component. Merit: explain its function. Distinction: evaluate its impact..."}
+                  value={lessonInfo.criteria} onChange={e => setLessonInfo(p => ({ ...p, criteria: e.target.value }))} />
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                  <label style={{ ...S.lbl, cursor: "pointer", display: "flex", alignItems: "center", gap: 5, textTransform: "none", letterSpacing: 0  }}>
+                    <input type="file" accept=".txt,.md,.csv" style={{ display: "none" }}
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => setLessonInfo(p => ({ ...p, criteria: ev.target.result }));
+                        reader.readAsText(file);
+                        e.target.value = "";
+                      }} />
+                    <span style={{ padding: "3px 10px", borderRadius: 6, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)", color: "#7a8ea0", fontSize: 11, cursor: "pointer" }}>📎 Upload .txt / .md file</span>
+                  </label>
+                  {lessonInfo.criteria && <button style={{ fontSize: 10, color: "#f87171", background: "none", border: "none", cursor: "pointer" }} onClick={() => setLessonInfo(p => ({ ...p, criteria: "" }))}>✕ clear</button>}
+                </div>
+              </div>
             </div>
 
             {/* Summary of what Step 1 captured */}
@@ -955,6 +1058,9 @@ Provide the complete resource ready for me to use, not just suggestions.`;
                   <li><strong>Format:</strong> Self-contained website (HTML file)</li>
                   {lessonInfo.methods && <li><strong>Current method:</strong> {lessonInfo.methods}</li>}
                   {lessonInfo.frustrations && <li><strong>Frustration:</strong> {lessonInfo.frustrations}</li>}
+                  {lessonInfo.assessmentTypes.length > 0 && <li><strong>Assessment types:</strong> {lessonInfo.assessmentTypes.join(", ")}</li>}
+                  {lessonInfo.criteria && <li><strong>Criteria:</strong> {lessonInfo.criteria.slice(0, 80)}{lessonInfo.criteria.length > 80 ? "…" : ""}</li>}
+                  <li><strong>Colour palette:</strong> {COLOUR_PALETTES.find(p => p.id === lessonInfo.palette)?.label || "Ocean Blue"}</li>
                 </ul>
               </div>
             )}
@@ -993,7 +1099,8 @@ Provide the complete resource ready for me to use, not just suggestions.`;
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {PROMPT_TEMPLATES.map((t, i) => {
-                const filled = t.build(lessonInfo);
+                const extras = buildPromptExtras(lessonInfo);
+                const filled = t.build(lessonInfo) + (extras ? `\n\n${extras}` : "");
                 return (
                   <div key={i} style={S.tmpl}>
                     <div style={S.tmplHead} onClick={() => setActiveTemplate(activeTemplate === i ? null : i)}>
@@ -1176,6 +1283,67 @@ Provide the complete resource ready for me to use, not just suggestions.`;
   return null;
 }
 
+// ===== GITHUB FOR EDUCATORS PAGE =====
+function GitHubPage({ onBack }) {
+  return (
+    <div style={{ fontFamily: "'Instrument Sans','DM Sans',system-ui,sans-serif", minHeight: "100vh", background: "linear-gradient(155deg,#0b1017 0%,#111c2a 35%,#152236 100%)", color: "#dde4ed" }}>
+      <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 16px",background:"rgba(0,0,0,0.3)",borderBottom:"1px solid rgba(255,255,255,0.04)",position:"sticky",top:0,zIndex:10,backdropFilter:"blur(12px)" }}>
+        <button style={{ background:"none",border:"none",color:"#5e7080",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:4 }} onClick={onBack}>
+          ← Back
+        </button>
+        <span style={{ fontSize:14,fontWeight:700,display:"flex",alignItems:"center",gap:6 }}>🎓 GitHub for Educators</span>
+        <span />
+      </div>
+      <div style={{ maxWidth:600,margin:"0 auto",padding:"40px 22px 80px" }}>
+        <div style={{ display:"inline-block",padding:"3px 13px",background:"rgba(99,179,237,0.08)",border:"1px solid rgba(99,179,237,0.2)",borderRadius:18,fontSize:10,fontWeight:700,letterSpacing:2,color:"#63b3ed",marginBottom:16 }}>NEXT STEP</div>
+        <h1 style={{ fontSize:28,fontWeight:800,margin:"0 0 10px",lineHeight:1.2,background:"linear-gradient(130deg,#e2e8f0 20%,#63b3ed 80%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>Learn GitHub for Educators</h1>
+        <p style={{ fontSize:15,color:"#6b7f92",margin:"0 0 32px",lineHeight:1.7 }}>GitHub isn&apos;t just for developers. Explore how version control, collaborative workflows, and free educator tools can transform the way you plan, share, and teach.</p>
+
+        <div style={{ background:"rgba(255,255,255,0.025)",border:"1px solid rgba(99,179,237,0.15)",borderRadius:16,padding:"28px 24px",marginBottom:20 }}>
+          <div style={{ display:"flex",alignItems:"center",gap:14,marginBottom:20 }}>
+            <div style={{ width:48,height:48,borderRadius:12,background:"rgba(99,179,237,0.1)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:26 }}>
+              🎓
+            </div>
+            <div>
+              <strong style={{ fontSize:17,display:"block",marginBottom:2 }}>GitHub for Educators</strong>
+              <span style={{ fontSize:13,color:"#5e7080" }}>gcrowhurst.github.io/github</span>
+            </div>
+          </div>
+          <p style={{ fontSize:14,color:"#8ea4b6",lineHeight:1.7,margin:"0 0 20px" }}>A teacher-focused guide to getting started with GitHub — free repositories, GitHub Classroom, Copilot for Education, and how to build a professional teaching portfolio.</p>
+          <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10,marginBottom:24 }}>
+            {[
+              { emoji:"📂", title:"Free Repositories",   desc:"Store and share all your teaching resources in one place" },
+              { emoji:"🧑‍💻", title:"GitHub Classroom",   desc:"Manage assignments, give feedback, and track student work" },
+              { emoji:"🤖", title:"Copilot for Education", desc:"Free AI assistant for verified teachers and students" },
+              { emoji:"🌍", title:"Teaching Portfolio",   desc:"Build a professional public profile of your work" },
+            ].map((item,i) => (
+              <div key={i} style={{ background:"rgba(0,0,0,0.15)",borderRadius:10,padding:"12px 14px" }}>
+                <div style={{ fontSize:22,marginBottom:6 }}>{item.emoji}</div>
+                <strong style={{ fontSize:13,display:"block",marginBottom:3 }}>{item.title}</strong>
+                <p style={{ fontSize:11,color:"#5e7080",margin:0,lineHeight:1.5 }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <a href="https://gcrowhurst.github.io/github" target="_blank" rel="noopener noreferrer"
+            style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"13px 24px",background:"linear-gradient(135deg,#2563eb,#38bdf8)",color:"#fff",borderRadius:10,fontWeight:700,fontSize:15,textDecoration:"none" }}>
+            🚀 Open GitHub for Educators
+          </a>
+        </div>
+
+        <div style={{ background:"rgba(251,191,36,0.04)",border:"1px solid rgba(251,191,36,0.1)",borderRadius:12,padding:"16px 18px" }}>
+          <strong style={{ fontSize:13,color:"#fbbf24",display:"flex",alignItems:"center",gap:6,marginBottom:8 }}>💡 Why GitHub for teachers?</strong>
+          <ul style={{ margin:0,paddingLeft:18,fontSize:13,color:"#a0b4c4",lineHeight:1.8 }}>
+            <li>Version control your lesson plans — never lose a resource again</li>
+            <li>Collaborate with colleagues across schools using pull requests</li>
+            <li>Share open educational resources with a global community</li>
+            <li>Show students the real tools professionals use every day</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ======== STYLES ========
 const S = {
   page: {
@@ -1227,6 +1395,7 @@ const S = {
   btnSm: { padding: "5px 12px", fontSize: 12 },
   btnLg: { padding: "14px 28px", fontSize: 16 },
   btnAct: { background: "rgba(99,179,237,0.12)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.25)" },
+  btnGH: { background: "rgba(99,179,237,0.07)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.2)" },
 
   bar: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
